@@ -3,13 +3,13 @@
     "name": "O'XELA KITCHEN",
     "short_name": "O'XELA",
     "description": "Premium African Dining",
-    "start_url": "http://127.0.0.1:5500/index.html",
+    "start_url": "/",
     "display": "standalone",
     "background_color": "#fdfaf7",
     "theme_color": "#e67e22",
     "icons": [
         {
-            "src": "http://127.0.0.1:5000/static/icons/icon-512.png",
+            "src": "/favicon.ico",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any maskable"
@@ -17,7 +17,7 @@
     ],
     "screenshots": [
         {
-            "src": "http://127.0.0.1:5000/static/Kitchen.jpeg",
+            "src": "/static/Kitchen.jpeg",
             "sizes": "1280x720",
             "type": "image/jpeg",
             "form_factor": "wide"
