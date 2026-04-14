@@ -465,11 +465,21 @@ def get_active_chats():
 def serve_hero_image():
     return send_from_directory(os.path.join(BASE_DIR, 'static'), 'Kitchen.jpeg', mimetype='image/jpeg')
 
+# --- SERVING HTML FILES ---
+
 @app.route('/')
-@app.route('/index.html')
-def home():
+def root():
+    # This serves your index.html as the main home page
     return send_from_directory(BASE_DIR, 'index.html')
 
+@app.route('/<path:path>')
+def serve_any_file(path):
+    # This ensures that if you go to /login.html or /admin_hub.html, 
+    # the server knows to look in your main folder for those files.
+    return send_from_directory(BASE_DIR, path)
+
 if __name__ == '__main__':
-    print("O'XELA KITCHEN BACKEND IS STARTING...")
-    app.run(debug=True, port=5000)
+    # Use the port Render provides, or default to 5000 for local testing
+    port = int(os.environ.get("PORT", 5000))
+    print(f"O'XELA KITCHEN BACKEND IS STARTING ON PORT {port}...")
+    app.run(host='0.0.0.0', port=port)
