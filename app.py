@@ -22,7 +22,8 @@ EMAIL_PASSWORD = "qvsmwldprxaktxri"
 EMAIL_RECEIVER = "simeonjohn118@gmail.com" 
 
 # --- DATABASE SETUP ---
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Using absolute path to ensure Render finds the files regardless of where the script runs
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 USERS_DB = os.path.join(BASE_DIR, 'users.json')
 ORDERS_DB = os.path.join(BASE_DIR, 'orders.json')
@@ -49,6 +50,7 @@ def favicon():
     return send_from_directory(icon_path, 'icon-512.png', mimetype='image/png')
 
 # --- FILE INITIALIZER ---
+# This creates the files if they don't exist so the load_data function doesn't crash
 for db_file in [USERS_DB, ORDERS_DB, SPECIAL_ORDERS_DB, MENU_DB, STAFF_DB, MESSAGES_DB, COMPLAINTS_DB, DELIVERY_DB]:
     if not os.path.exists(db_file):
         with open(db_file, 'w') as f:
@@ -70,7 +72,7 @@ def load_data(file_path):
 def save_data(file_path, data):
     with open(file_path, 'w') as f: json.dump(data, f, indent=4)
 
-# --- DELIVERY ZONE ROUTES (NEW) ---
+# --- DELIVERY ZONE ROUTES ---
 
 @app.route('/get_delivery_zones', methods=['GET'])
 def get_delivery_zones():
@@ -102,7 +104,7 @@ def update_delivery_zone():
     save_data(DELIVERY_DB, zones)
     return jsonify({"status": "success"}), 200
 
-# --- NEW ADMIN NEGOTIATION ROUTES ---
+# --- ADMIN NEGOTIATION ROUTES ---
 
 @app.route('/get_all_special_orders', methods=['GET'])
 def get_all_special_orders():
@@ -134,7 +136,7 @@ def admin_reply_special():
         return jsonify({"status": "success", "message": "Reply sent to customer"}), 200
     return jsonify({"status": "error", "message": "Order ID not found"}), 404
 
-# --- REMAINING EXISTING ROUTES ---
+# --- STORE CONFIG ROUTES ---
 
 @app.route('/get_store_status', methods=['GET'])
 def get_store_status():
@@ -469,17 +471,13 @@ def serve_hero_image():
 
 @app.route('/')
 def root():
-    # This serves your index.html as the main home page
     return send_from_directory(BASE_DIR, 'index.html')
 
 @app.route('/<path:path>')
 def serve_any_file(path):
-    # This ensures that if you go to /login.html or /admin_hub.html, 
-    # the server knows to look in your main folder for those files.
     return send_from_directory(BASE_DIR, path)
 
 if __name__ == '__main__':
-    # Use the port Render provides, or default to 5000 for local testing
     port = int(os.environ.get("PORT", 5000))
     print(f"O'XELA KITCHEN BACKEND IS STARTING ON PORT {port}...")
     app.run(host='0.0.0.0', port=port)
