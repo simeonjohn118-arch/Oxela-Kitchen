@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O'XELA | Staff Command</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --accent: #ff6b6b; 
+            --dark-bg: #0a0a0a;
+            --card-bg: #121212;
+            --sidebar-bg: #000000;
+            --text-main: #ffffff;
+            --text-dim: #a0a0a0;
+            --sidebar-w: 280px; 
+            --glow: 0 10px 30px rgba(255, 107, 107, 0.2);
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+        body { background: var(--dark-bg); display: flex; min-height: 100vh; color: var(--text-main); transition: 0.3s; }
+
+        /* --- NAVIGATION --- */
+        .sidebar {
+            width: var(--sidebar-w); background: var(--sidebar-bg); height: 100vh;
+            position: fixed; left: 0; top: 0; padding: 40px 25px;
+            display: flex; flex-direction: column; z-index: 1000; border-right: 1px solid #1a1a1a;
+        }
+        .logo-area { font-weight: 800; font-size: 1.6rem; margin-bottom: 60px; }
+        .logo-area span { color: var(--accent); }
+        .nav-item {
+            text-decoration: none; color: var(--text-dim); font-weight: 600;
+            display: flex; align-items: center; padding: 18px 20px; border-radius: 20px;
+            margin-bottom: 12px; transition: 0.3s;
+        }
+        .nav-item.active { background: var(--accent); color: white; box-shadow: var(--glow); }
+        .nav-icon { margin-right: 15px; font-size: 1.3rem; }
+
+        /* --- LAYOUT --- */
+        .main { margin-left: var(--sidebar-w); width: calc(100% - var(--sidebar-w)); padding: 50px; }
+        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .header-title { font-weight: 800; font-size: 2.2rem; margin-bottom: 40px; }
+
+        .admin-card { 
+            background: var(--card-bg); border-radius: 35px; padding: 35px; 
+            border: 1px solid #1a1a1a; transition: 0.4s ease;
+        }
+        .section-title { font-weight: 800; font-size: 0.85rem; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; }
+
+        /* --- STAFF PERSONALIZATION (THEMES) --- */
+        .theme-selector { display: flex; gap: 15px; margin-bottom: 20px; }
+        .theme-btn { 
+            flex: 1; padding: 15px; border-radius: 15px; border: 2px solid #222; 
+            background: #1a1a1a; color: white; cursor: pointer; font-weight: 700; transition: 0.3s;
+        }
+        .theme-btn.active { border-color: var(--accent); background: rgba(255,107,107,0.1); }
+
+        /* --- CONTROL ELEMENTS --- */
+        .control-item { 
+            display: flex; justify-content: space-between; align-items: center; 
+            background: #0a0a0a; padding: 20px; border-radius: 20px; margin-bottom: 15px; border: 1px solid #1a1a1a;
+        }
+        .toggle-switch { width: 55px; height: 30px; background: #333; border-radius: 20px; position: relative; cursor: pointer; }
+        .toggle-switch::after { content: ''; position: absolute; width: 22px; height: 22px; background: white; border-radius: 50%; top: 4px; left: 4px; transition: 0.3s; }
+        .toggle-switch.on { background: var(--accent); }
+        .toggle-switch.on::after { left: 29px; }
+
+        input[type="time"] { 
+            background: #1a1a1a; border: 1px solid #333; color: white; padding: 15px; border-radius: 15px; color-scheme: dark; font-weight: 700;
+        }
+
+        .save-btn { 
+            width: 100%; padding: 22px; background: white; color: black; border: none; 
+            border-radius: 20px; font-weight: 800; cursor: pointer; transition: 0.3s; margin-top: 10px;
+        }
+        .save-btn:hover { background: var(--accent); color: white; transform: translateY(-3px); box-shadow: var(--glow); }
+
+        /* --- TOAST --- */
+        #customAlert { 
+            position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); 
+            background: white; color: black; padding: 20px 40px; border-radius: 25px; 
+            font-weight: 800; z-index: 2000; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; gap: 15px;
+        }
+        #customAlert.show { bottom: 40px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+
+        @media (max-width: 1100px) { .grid-container { grid-template-columns: 1fr; } }
+        @media (max-width: 900px) { 
+            .sidebar { width: 80px; padding: 40px 10px; }
+            .logo-area, .nav-item span:not(.nav-icon) { display: none; }
+            .main { margin-left: 80px; width: calc(100% - 80px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo-area">O'XELA <span>KITCHEN</span></div>
+        <nav class="nav-list">
+            <a href="admin_hub.html" class="nav-item"><span class="nav-icon">🎛️</span> <span>Admin Hub</span></a>
+            <a href="order_dashboard.html" class="nav-item"><span class="nav-icon">🛒</span> <span>Orders</span></a>
+            <a href="delivery_admin.html" class="nav-item"><span class="nav-icon">🚚</span> <span>Delivery zones</span></a>
+            <a href="settings.html" class="nav-item active"><span class="nav-icon">⚙️</span> <span>Store setting</span></a>
+        </nav>
+    </div>
+
+    <main class="main">
+        <h2 class="header-title">Staff Settings</h2>
+
+        <div class="grid-container">
+            <div class="admin-card">
+                <div class="section-title">🕒 Store Management</div>
+                
+                <div class="control-item">
+                    <div>
+                        <p style="font-weight: 700;">Manual Close</p>
+                        <p style="font-size: 0.8rem; color: var(--text-dim);">Lock store immediately</p>
+                    </div>
+                    <div class="toggle-switch" id="manualClose" onclick="toggleSwitch('manualClose')"></div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
+                    <div>
+                        <label style="font-size: 0.7rem; font-weight: 800; color: var(--text-dim); display: block; margin-bottom: 5px;">OPENING</label>
+                        <input type="time" id="openTime" style="width: 100%;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.7rem; font-weight: 800; color: var(--text-dim); display: block; margin-bottom: 5px;">CLOSING</label>
+                        <input type="time" id="closeTime" style="width: 100%;">
+                    </div>
+                </div>
+                <button class="save-btn" style="margin-top: 30px;" onclick="saveSystem()">Save Store Config ⚡</button>
+            </div>
+
+            <div class="admin-card">
+                <div class="section-title">🎨 UI Personalization</div>
+                
+                <p style="font-size: 0.8rem; font-weight: 700; margin-bottom: 10px;">DASHBOARD THEME</p>
+                <div class="theme-selector">
+                    <button class="theme-btn active" onclick="setTheme('default', this)">Glow</button>
+                    <button class="theme-btn" onclick="setTheme('minimal', this)">Minimal</button>
+                    <button class="theme-btn" onclick="setTheme('high-contrast', this)">Sharp</button>
+                </div>
+
+                <div class="control-item">
+                    <div>
+                        <p style="font-weight: 700;">Order Alerts</p>
+                        <p style="font-size: 0.8rem; color: var(--text-dim);">Sound notification for new orders</p>
+                    </div>
+                    <div class="toggle-switch on" id="alertSound" onclick="toggleSwitch('alertSound')"></div>
+                </div>
+
+                <div class="control-item">
+                    <div>
+                        <p style="font-weight: 700;">Auto-Refresh</p>
+                        <p style="font-size: 0.8rem; color: var(--text-dim);">Live update order list every 30s</p>
+                    </div>
+                    <div class="toggle-switch on" id="autoRefresh" onclick="toggleSwitch('autoRefresh')"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="customAlert"><div class="dot"></div> <span id="alertMsg"></span></div>
+
+    <script>
+        const API_URL = "http://127.0.0.1:5000";
+
+        function showToast(msg) {
+            const alert = document.getElementById('customAlert');
+            document.getElementById('alertMsg').innerText = msg;
+            alert.classList.add('show');
+            setTimeout(() => alert.classList.remove('show'), 3000);
+        }
+
+        function toggleSwitch(id) {
+            document.getElementById(id).classList.toggle('on');
+        }
+
+        function setTheme(theme, btn) {
+            document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            if(theme === 'minimal') {
+                document.documentElement.style.setProperty('--accent', '#ffffff');
+                document.documentElement.style.setProperty('--glow', 'none');
+            } else if(theme === 'high-contrast') {
+                document.documentElement.style.setProperty('--accent', '#00ffaa');
+                document.documentElement.style.setProperty('--glow', '0 0 20px rgba(0,255,170,0.3)');
+            } else {
+                document.documentElement.style.setProperty('--accent', '#ff6b6b');
+                document.documentElement.style.setProperty('--glow', '0 10px 30px rgba(255,107,107,0.2)');
+            }
+            showToast(`Theme: ${theme.toUpperCase()}`);
+        }
+
+        async function saveSystem() {
+            // Pack the data exactly how the Python route expects it
+            const config = {
+                open_time: document.getElementById('openTime').value,
+                close_time: document.getElementById('closeTime').value,
+                manual_closed: document.getElementById('manualClose').classList.contains('on')
+            };
+            
+            try {
+                const res = await fetch(`${API_URL}/update_store_config`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(config)
+                });
+                if(res.ok) {
+                    showToast("System Updated! ✅");
+                }
+            } catch(e) { 
+                showToast("Connection Error ❌"); 
+            }
+        }
+
+        window.onload = async () => {
+            // Load current status from Python to sync the inputs when page opens
+            try {
+                const res = await fetch(`${API_URL}/get_store_status`);
+                const data = await res.json();
+                
+                if (data.config) {
+                    document.getElementById('openTime').value = data.config.open_time || "08:00";
+                    document.getElementById('closeTime').value = data.config.close_time || "22:00";
+                    
+                    if(data.config.manual_closed) {
+                        document.getElementById('manualClose').classList.add('on');
+                    } else {
+                        document.getElementById('manualClose').classList.remove('on');
+                    }
+                }
+            } catch(e) {
+                console.log("Could not load initial config");
+            }
+        };
+        
+    </script>
+</body>
+</html>

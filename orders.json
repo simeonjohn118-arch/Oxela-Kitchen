@@ -1,0 +1,35 @@
+[
+    {
+        "user_email": "focusefootball4@gmail.com",
+        "customer_name": "Fadugba Temitope",
+        "customer_phone": "08024721732",
+        "delivery_address": "Micheal Okpara Street",
+        "items": [
+            {
+                "name": "Jollof Rice (Fried Chicken & Fried Plantain)",
+                "price": "\u20a62,500",
+                "timestamp": 1775867853229
+            }
+        ],
+        "total": "\u20a62,500",
+        "order_id": "OX-20260411-001",
+        "timestamp": "2026-04-11 01:37:53",
+        "status": "SUCCESSFUL"
+    },
+    {
+        "user_email": "marcosstan55@gmail.com",
+        "customer_name": "Fadugba Temitope",
+        "customer_phone": "08024721732",
+        "delivery_address": "Wuse zone 6: Micheal Okpara Street",
+        "items": [
+            {
+                "name": "Jollof & Chicken",
+                "price": 3500
+            }
+        ],
+        "total": "\u20a64,800",
+        "order_id": "OX-20260413-001",
+        "timestamp": "2026-04-13 17:47:05",
+        "status": "SUCCESSFUL"
+    }
+]

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kitchen Support | O'XELA KITCHEN</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #e67e22;
+            --primary-light: #fff4ed;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --bot-msg: #f1f5f9;
+            --user-msg: #e67e22;
+            --radius: 18px;
+            --error: #ef4444;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 500px;
+            height: 80vh;
+            background: var(--white);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            position: relative;
+        }
+
+        /* Connection Warning Badge */
+        #connBadge {
+            display: none;
+            background: var(--error);
+            color: white;
+            text-align: center;
+            font-size: 0.75rem;
+            padding: 5px;
+            font-weight: bold;
+        }
+
+        .chat-header {
+            padding: 20px 25px;
+            background: var(--white);
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            text-decoration: none;
+            font-size: 1.2rem;
+            color: var(--text-main);
+        }
+
+        .header-info h2 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .header-info p {
+            margin: 0;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .message-area {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background-image: radial-gradient(#e2e8f0 0.5px, transparent 0.5px);
+            background-size: 20px 20px;
+        }
+
+        .msg {
+            max-width: 80%;
+            padding: 12px 18px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        .msg.received {
+            align-self: flex-start;
+            background: var(--bot-msg);
+            color: var(--text-main);
+            border-radius: 0px 15px 15px 15px;
+        }
+
+        .msg.sent {
+            align-self: flex-end;
+            background: var(--user-msg);
+            color: white;
+            border-radius: 15px 15px 0px 15px;
+            box-shadow: 0 4px 12px rgba(230, 126, 34, 0.2);
+        }
+
+        .time {
+            display: block;
+            font-size: 0.7rem;
+            margin-top: 5px;
+            opacity: 0.7;
+        }
+
+        .input-area {
+            padding: 20px;
+            background: var(--white);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        input {
+            flex: 1;
+            padding: 14px 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 25px;
+            outline: none;
+            font-family: inherit;
+            background: #f8fafc;
+        }
+
+        .send-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div id="connBadge">⚠️ Backend Offline - Check Flask Server</div>
+    
+    <div class="chat-header">
+        <a href="dashboard.html" class="back-btn">←</a>
+        <div class="header-info">
+            <h2 id="orderRef">Admin Support Mode</h2>
+            <p id="chatStatus">Connecting...</p>
+        </div>
+    </div>
+
+    <div class="message-area" id="chatBox">
+        </div>
+
+    <div class="input-area">
+        <input type="text" id="userInput" placeholder="Type your response...">
+        <button class="send-btn" onclick="sendMessage()">➤</button>
+    </div>
+</div>
+
+<script>
+    const API_URL = "http://127.0.0.1:5000";
+    
+    // 1. Extraction: Prioritize URL ID, then LocalStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentOrderId = urlParams.get('id') || localStorage.getItem('activeChatId');
+    
+    if (!currentOrderId) {
+        document.getElementById('chatBox').innerHTML = '<div style="text-align:center; padding:20px; color:gray;">Select a complaint from the dashboard to start.</div>';
+    }
+
+    document.getElementById('orderRef').innerText = currentOrderId ? `Resolving: ${currentOrderId}` : "No Active Complaint";
+
+    // 2. Health Check: See if Flask is actually alive
+    async function checkConnection() {
+        try {
+            const res = await fetch(`${API_URL}/get_chat/test-connection`);
+            document.getElementById('connBadge').style.display = 'none';
+            document.getElementById('chatStatus').innerText = "Kitchen Support is Online";
+        } catch (err) {
+            document.getElementById('connBadge').style.display = 'block';
+            document.getElementById('chatStatus').innerText = "Offline";
+        }
+    }
+
+    // 3. Main Loader
+    async function loadMessages() {
+        if (!currentOrderId) return;
+        
+        try {
+            const res = await fetch(`${API_URL}/get_chat/${currentOrderId}`);
+            if (!res.ok) throw new Error("HTTP Error");
+            
+            const messages = await res.json();
+            renderMessages(messages);
+        } catch (err) {
+            console.error("Communication Fail:", err);
+            checkConnection();
+        }
+    }
+
+    function renderMessages(messages) {
+        const chatBox = document.getElementById('chatBox');
+        
+        // Only update if there's actual data to avoid flickering
+        if (messages.length === 0) {
+            chatBox.innerHTML = '<div style="text-align:center; color:gray; font-size:0.8rem;">Waiting for customer message...</div>';
+            return;
+        }
+
+        chatBox.innerHTML = messages.map(msg => {
+            const isFromMe = msg.sender === "Kitchen";
+            // Important: Replace \n with <br> so the complaint details display correctly
+            const formattedText = msg.text.replace(/\n/g, '<br>');
+            const timestamp = msg.timestamp ? msg.timestamp.split(' ')[1] : "Now";
+
+            return `
+                <div class="msg ${isFromMe ? 'sent' : 'received'}">
+                    ${formattedText}
+                    <span class="time">${timestamp}</span>
+                </div>
+            `;
+        }).join('');
+        
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('userInput');
+        const text = input.value.trim();
+        if (!text || !currentOrderId) return;
+
+        const payload = {
+            order_id: currentOrderId,
+            sender: "Kitchen", 
+            text: text
+        };
+
+        try {
+            const res = await fetch(`${API_URL}/send_message`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            if (res.ok) {
+                input.value = '';
+                loadMessages();
+            }
+        } catch (err) {
+            alert("Connection lost. Message not sent.");
+        }
+    }
+
+    // Auto-refresh logic
+    setInterval(loadMessages, 3000);
+    setInterval(checkConnection, 10000); // Check server health every 10s
+    loadMessages();
+    checkConnection();
+</script>
+
+</body>
+</html>

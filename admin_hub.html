@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Hub | O'Xela Kitchen</title>
+    <style>
+        :root { --oxela-orange: #e67e22; --oxela-dark: #d35400; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; }
+        
+        .header { background: white; width: 100%; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 40px; }
+        .header h1 { color: var(--oxela-dark); margin: 0; font-size: 1.8rem; }
+        
+        .grid-container { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 20px; 
+            width: 90%; 
+            max-width: 1000px; 
+        }
+
+        .card { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 20px; 
+            text-align: center; 
+            text-decoration: none; 
+            color: #333; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-bottom: 5px solid var(--oxela-orange);
+        }
+
+        .card:hover { 
+            transform: translateY(-10px); 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1); 
+        }
+
+        .card .icon { font-size: 3rem; margin-bottom: 15px; display: block; }
+        .card h3 { margin: 10px 0; color: var(--oxela-dark); }
+        .card p { font-size: 0.9rem; color: #666; }
+
+        .logout-btn { margin-top: 40px; color: #e74c3c; cursor: pointer; font-weight: bold; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>O'XELA KITCHEN MASTER CONTROL</h1>
+    <p id="adminGreeting">Welcome back, Admin</p>
+</div>
+
+<div class="grid-container">
+    <a href="admin_menu.html" class="card">
+        <span class="icon">📜</span>
+        <h3>Master Menu</h3>
+        <p>Update prices, set promos, and manage stock.</p>
+    </a>
+
+    <a href="order_dashboard.html" class="card">
+        <span class="icon">🛍️</span>
+        <h3>Regular Orders</h3>
+        <p>View and manage incoming food orders.</p>
+    </a>
+
+    <a href="special_dashboard.html" class="card">
+        <span class="icon">🎂</span>
+        <h3>Special Requests</h3>
+        <p>Negotiate budgets and chat with customers.</p>
+    </a>
+
+    <a href="dashboard.html" class="card">
+        <span class="icon">⚠️</span>
+        <h3>Complaints</h3>
+        <p>Resolve issues and chat with unhappy guests.</p>
+    </a>
+
+    <a href="sales_records.html" class="card">
+        <span class="icon">💰</span>
+        <h3>Sales Records</h3>
+        <p>Track your daily revenue and growth.</p>
+    </a>
+    <a href="delivery_admin.html" class="card">
+        <span class="icon">🚀</span>
+        <h3>Delivery Management</h3>
+        <p>Resolve issues of dilevry price and new locations.</p>
+    </a>
+<a href="settings.html" class="card">
+        <span class="icon">⚙️</span>
+        <h3>Store setting</h3>
+        <p>management use only</p>
+    </a>
+</div>
+
+<a href="login.html" class="logout-btn">Log Out Securely</a>
+
+<script>
+    // Just to make it feel personal
+    const adminName = localStorage.getItem('admin_name') || "Chef";
+    document.getElementById('adminGreeting').innerText = `Welcome back, ${adminName}`;
+</script>
+
+</body>
+</html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O'XELA | Support Inbox</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --accent: #ff6b6b; 
+            --dark-bg: #0a0a0a;
+            --card-bg: #121212;
+            --text-main: #ffffff;
+            --text-dim: #a0a0a0;
+            --border: #1a1a1a;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+        
+        body { 
+            background-color: var(--dark-bg); 
+            color: var(--text-main); 
+            padding: 40px 20px; 
+            min-height: 100vh;
+        }
+
+        .container { max-width: 900px; margin: 0 auto; }
+
+        .header {
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 { font-size: 2rem; font-weight: 800; letter-spacing: -1px; }
+        .header h1 span { color: var(--accent); }
+
+        .refresh-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: 0.3s;
+        }
+        .refresh-btn:hover { background: var(--accent); border-color: var(--accent); transform: translateY(-2px); }
+
+        .complaints-grid { display: grid; gap: 18px; }
+
+        .complaint-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 25px;
+            border-radius: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .complaint-card:hover {
+            transform: scale(1.02);
+            border-color: var(--accent);
+            box-shadow: 0 15px 30px rgba(255, 107, 107, 0.1);
+        }
+
+        .complaint-info h3 { font-size: 1.1rem; margin-bottom: 6px; font-weight: 700; }
+        .complaint-info p { font-size: 0.9rem; color: var(--text-dim); line-height: 1.4; }
+
+        .status-pill {
+            background: rgba(255, 107, 107, 0.1);
+            color: var(--accent);
+            padding: 6px 15px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid rgba(255, 107, 107, 0.2);
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 80px 40px;
+            color: var(--text-dim);
+            background: var(--card-bg);
+            border-radius: 30px;
+            border: 2px dashed var(--border);
+        }
+
+        .error-box {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #ef4444;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Inbox<span>.</span></h1>
+        <button class="refresh-btn" onclick="fetchComplaints()">🔄 Refresh</button>
+    </div>
+
+    <div id="complaintsList" class="complaints-grid">
+        <div class="no-data">Initializing secure connection...</div>
+    </div>
+</div>
+
+<script>
+    const API_URL = "http://127.0.0.1:5000";
+
+    async function fetchComplaints() {
+        const list = document.getElementById('complaintsList');
+        
+        try {
+            // Added timeout to prevent infinite loading
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+            const response = await fetch(`${API_URL}/get_active_chats`, {
+                method: 'GET',
+                signal: controller.signal,
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            clearTimeout(timeoutId);
+
+            if (!response.ok) throw new Error(`Server returned ${response.status}`);
+            
+            let chats = await response.json();
+            console.log("O'XELA Debug: Data received", chats);
+
+            // Safety check: Convert object to array if needed
+            if (!Array.isArray(chats)) {
+                chats = Object.values(chats); 
+            }
+            
+            if (chats.length === 0) {
+                list.innerHTML = `
+                    <div class="no-data">
+                        <p style="font-size: 1.5rem; margin-bottom: 10px;">📭</p>
+                        <p>No active complaints right now.</p>
+                    </div>`;
+                return;
+            }
+
+            list.innerHTML = chats.map(chat => {
+                const preview = chat.last_msg ? chat.last_msg.substring(0, 50) : "Open conversation...";
+                const orderId = chat.order_id || "Unknown ID";
+                
+                return `
+                <div class="complaint-card" onclick="goToChat('${orderId}')">
+                    <div class="complaint-info">
+                        <h3>Order #${orderId}</h3>
+                        <p>${preview}...</p>
+                    </div>
+                    <div class="status-pill">Active</div>
+                </div>
+                `;
+            }).join('');
+
+        } catch (err) {
+            console.error("Dashboard error:", err);
+            list.innerHTML = `
+                <div class="error-box">
+                    <strong>Connection Lost</strong><br>
+                    Make sure your Python Flask server is running at ${API_URL}<br>
+                    <small style="opacity: 0.7;">Error: ${err.message}</small>
+                </div>`;
+        }
+    }
+
+    function goToChat(id) {
+        if (!id || id === "Unknown ID") return;
+        localStorage.setItem('activeChatId', id);
+        window.location.href = `complaints.html?id=${id}`;
+    }
+
+    // Initial load
+    fetchComplaints();
+    
+    // Auto-refresh every 15 seconds
+    setInterval(fetchComplaints, 15000);
+</script>
+
+</body>
+</html>

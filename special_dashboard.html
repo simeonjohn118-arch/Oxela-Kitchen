@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master App | Special Order Negotiations</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --admin-dark: #121212;
+            --sidebar-gray: #1e1e1e;
+            --brand-red: #c0392b;
+            --text-light: #ecf0f1;
+            --bg-body: #f8f9fa;
+            --border-color: #e0e0e0;
+        }
+
+        body { 
+            margin: 0; font-family: 'Poppins', sans-serif; 
+            background: var(--bg-body); display: flex; height: 100vh; overflow: hidden;
+        }
+
+        /* --- SIDE NAVIGATION --- */
+        .sidebar {
+            width: 260px;
+            background: var(--admin-dark);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 30px 20px;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            color: var(--brand-red);
+            text-align: center;
+            border-bottom: 1px solid #333;
+        }
+
+        .nav-links { padding: 20px 0; flex-grow: 1; }
+
+        .nav-item {
+            padding: 15px 25px;
+            color: #bbb;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: var(--sidebar-gray);
+            color: white;
+            border-left: 4px solid var(--brand-red);
+        }
+
+        /* --- MAIN CONTENT --- */
+        .main-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .top-nav {
+            background: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* --- CHAT WORKSPACE --- */
+        .workspace {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        .order-inbox {
+            background: white;
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+        }
+
+        .inbox-item {
+            padding: 20px;
+            border-bottom: 1px solid #f1f1f1;
+            cursor: pointer;
+            transition: 0.2s;
+            position: relative;
+        }
+
+        .inbox-item:hover { background: #fdfdfd; }
+        .inbox-item.active { background: #fff5f5; border-right: 3px solid var(--brand-red); }
+
+        .inbox-item h4 { margin: 0 0 5px; font-size: 0.95rem; color: #333; }
+        .inbox-item p { margin: 0; font-size: 0.8rem; color: #777; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .status-dot {
+            display: inline-block;
+            width: 8px; height: 8px;
+            background: var(--brand-red);
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        /* --- CHAT AREA --- */
+        .chat-area {
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+        }
+
+        .chat-header {
+            padding: 20px 30px;
+            background: white;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            padding: 30px;
+            overflow-y: auto;
+            background: #f4f7f6;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .msg { max-width: 75%; padding: 15px; border-radius: 12px; font-size: 0.9rem; line-height: 1.5; }
+        
+        .msg.customer {
+            align-self: flex-start;
+            background: white;
+            color: #333;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-bottom-left-radius: 2px;
+        }
+
+        .msg.admin {
+            align-self: flex-end;
+            background: var(--brand-red);
+            color: white;
+            border-bottom-right-radius: 2px;
+        }
+
+        .msg-info { font-size: 0.7rem; margin-bottom: 8px; display: block; font-weight: 600; text-transform: uppercase; }
+
+        .reply-box {
+            padding: 25px 30px;
+            background: white;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 15px;
+        }
+
+        .reply-box input {
+            flex-grow: 1;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 30px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .send-btn {
+            background: var(--brand-red);
+            color: white;
+            border: none;
+            padding: 0 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .send-btn:hover { background: #a93226; transform: translateY(-2px); }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #ccc;
+        }
+
+        /* --- O'XELA TOAST STYLING --- */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1000;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        #toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-header">O'XELA MASTER</div>
+        <nav class="nav-links">
+            <a href="admin_hub.html" class="nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="order_dashboard.html" class="nav-item"><i class="fas fa-list-ul"></i> Regular Orders</a>
+            <a href="special_dashboard.html" class="nav-item active"><i class="fas fa-comment-alt"></i> Special Requests</a>
+            <a href="admin_menu.html" class="nav-item"><i class="fas fa-utensils"></i> Menu Editor</a>
+            <a href="settings.html" class="nav-item"><i class="fas fa-cog"></i> Settings</a>
+        </nav>
+    </div>
+
+    <div class="main-container">
+        <div class="top-nav">
+            <h2 style="margin:0; font-family:'Playfair Display'">Special Order Manager</h2>
+            <div style="font-size: 0.9rem; color: #666;"><i class="fas fa-user-shield"></i> Administrator</div>
+        </div>
+
+        <div class="workspace">
+            <div class="order-inbox" id="orderInbox"></div>
+
+            <div class="chat-area">
+                <div id="activeChat" style="display:none; flex-direction:column; height:100%;">
+                    <div class="chat-header">
+                        <div>
+                            <h3 id="currentCustName" style="margin:0;">Customer Name</h3>
+                            <small id="currentOrderId" style="color:var(--brand-red)">#SP-00000</small>
+                        </div>
+                        <div class="actions">
+                            <button onclick="markAsComplete()" style="background:none; border:1px solid #ddd; padding:8px 15px; border-radius:5px; cursor:pointer;">Close Ticket</button>
+                        </div>
+                    </div>
+
+                    <div class="chat-messages" id="chatBox"></div>
+
+                    <div class="reply-box">
+                        <input type="text" id="adminReply" placeholder="Write your negotiation message or final price...">
+                        <button class="send-btn" onclick="sendReply()">Send Reply</button>
+                    </div>
+                </div>
+
+                <div id="noSelection" class="empty-state">
+                    <i class="fas fa-comments fa-5x"></i>
+                    <p>Select a special request to start negotiating.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast"></div>
+
+    <script>
+        const API_BASE = "http://127.0.0.1:5000";
+        let activeOrderId = null;
+
+        // --- TOAST FUNCTION ---
+        function showToast(message, color = "#333") {
+            const toast = document.getElementById("toast");
+            toast.innerText = message;
+            toast.style.backgroundColor = color;
+            toast.className = "show";
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+        }
+
+        async function fetchInbox() {
+            try {
+                const response = await fetch(`${API_BASE}/get_all_special_orders`);
+                const orders = await response.json();
+                const inbox = document.getElementById('orderInbox');
+                
+                inbox.innerHTML = orders.reverse().map(order => `
+                    <div class="inbox-item ${activeOrderId === order.order_id ? 'active' : ''}" 
+                         onclick="openConversation('${order.order_id}')">
+                        <span class="status-dot"></span>
+                        <h4>${order.customer_name || 'Guest User'}</h4>
+                        <p>${order.description}</p>
+                        <small style="font-size:0.7rem; color:#aaa;">${order.timestamp}</small>
+                    </div>
+                `).join('');
+            } catch (err) { console.error("Inbox load failed", err); }
+        }
+
+        async function openConversation(orderId) {
+            activeOrderId = orderId;
+            document.getElementById('noSelection').style.display = 'none';
+            document.getElementById('activeChat').style.display = 'flex';
+            fetchInbox();
+
+            try {
+                const response = await fetch(`${API_BASE}/get_order_details/${orderId}`);
+                const data = await response.json();
+
+                document.getElementById('currentCustName').innerText = data.customer_name;
+                document.getElementById('currentOrderId').innerText = data.order_id;
+
+                const chatBox = document.getElementById('chatBox');
+                chatBox.innerHTML = `
+                    <div class="msg customer">
+                        <span class="msg-info">Customer Request</span>
+                        <strong>Items:</strong> ${data.description}<br>
+                        <strong>Budget:</strong> ₦${data.budget}<br>
+                        <strong>Date:</strong> ${data.delivery_date}
+                    </div>
+                `;
+
+                if (data.admin_reply) {
+                    chatBox.innerHTML += `
+                        <div class="msg admin">
+                            <span class="msg-info">Your Reply</span>
+                            ${data.admin_reply}
+                        </div>
+                    `;
+                }
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } catch (err) { console.error("Chat load failed", err); }
+        }
+
+        async function sendReply() {
+            const replyInput = document.getElementById('adminReply');
+            const message = replyInput.value;
+
+            if (!message || !activeOrderId) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/admin_reply_special`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        order_id: activeOrderId,
+                        reply: message
+                    })
+                });
+
+                if (response.ok) {
+                    replyInput.value = '';
+                    showToast("Reply sent to customer!", "green");
+                    openConversation(activeOrderId);
+                } else {
+                    showToast("Failed to send reply", "var(--brand-red)");
+                }
+            } catch (err) { showToast("Server error", "var(--brand-red)"); }
+        }
+
+        function markAsComplete() {
+            showToast("Ticket closed successfully", "#333");
+        }
+
+        fetchInbox();
+        setInterval(fetchInbox, 20000);
+    </script>
+</body>
+</html>

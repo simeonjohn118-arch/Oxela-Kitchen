@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Menu | O'XELA KITCHEN</title>
+    <style>
+        :root { 
+            --oxela-orange: #e67e22; 
+            --oxela-dark: #d35400; 
+            --oxela-light: #f4f7f6;
+            --success: #27ae60;
+            --danger: #e74c3c;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--oxela-light); margin: 0; padding: 20px; color: #333; }
+        
+        .container { max-width: 1300px; margin: auto; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--oxela-light); padding-bottom: 25px; margin-bottom: 30px; }
+        .header h2 { color: var(--oxela-dark); margin: 0; font-size: 1.8rem; }
+        .back-link { text-decoration: none; color: var(--oxela-orange); font-weight: bold; font-size: 0.9rem; transition: 0.3s; }
+
+        /* --- ADD ITEM SECTION --- */
+        .add-item-box { 
+            background: #fffdfb; 
+            padding: 25px; 
+            border-radius: 12px; 
+            border: 2px dashed var(--oxela-orange); 
+            margin-bottom: 40px; 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
+            gap: 20px; 
+            align-items: end; 
+        }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px; }
+        .form-group input, .form-group select { 
+            padding: 12px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            font-size: 0.95rem;
+            outline-color: var(--oxela-orange);
+            background: white;
+        }
+        .add-btn { 
+            background: var(--success); 
+            color: white; border: none; padding: 12px; border-radius: 8px; 
+            cursor: pointer; font-weight: bold; font-size: 1rem; transition: 0.3s; height: 48px;
+        }
+        .add-btn:hover { background: #219150; transform: translateY(-2px); }
+
+        /* --- TABLE STYLING --- */
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+        th { text-align: left; background: var(--oxela-light); padding: 18px; color: #666; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
+        td { padding: 15px 18px; border-bottom: 1px solid #f0f0f0; }
+        
+        .img-preview { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; background: #eee; border: 1px solid #ddd; }
+
+        .table-input { 
+            width: 100%; padding: 10px; border: 1px solid #eee; border-radius: 6px; font-size: 0.9rem;
+        }
+        .table-input[type="file"] { font-size: 0.7rem; padding: 5px; }
+        .table-input:focus { border-color: var(--oxela-orange); outline: none; background: #fffcf9; }
+        .promo-input { border: 2px solid var(--oxela-orange) !important; color: var(--oxela-dark); font-weight: 700; }
+
+        .save-btn { background: var(--oxela-orange); color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .save-btn:hover { background: var(--oxela-dark); }
+
+        /* --- TOAST --- */
+        #toast {
+            visibility: hidden; min-width: 300px; background-color: #333; color: #fff; text-align: center;
+            border-radius: 12px; padding: 20px; position: fixed; z-index: 1000; left: 50%; bottom: 40px;
+            transform: translateX(-50%); font-weight: 500; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 40px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 40px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+    </style>
+</head>
+<body>
+
+<div id="toast">Message</div>
+
+<div class="container">
+    <div class="header">
+        <h2>Master Menu Dashboard</h2>
+        <a href="admin_hub.html" class="back-link">← RETURN TO HUB</a>
+    </div>
+
+    <div class="add-item-box">
+        <div class="form-group">
+            <label>Dish Name</label>
+            <input type="text" id="newName" placeholder="e.g. Special Meatpie">
+        </div>
+        <div class="form-group">
+            <label>Category</label>
+            <select id="newCategory">
+                <option value="Dishes">Dishes</option>
+                <option value="Snacks">Snacks</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Price (₦)</label>
+            <input type="number" id="newPrice" placeholder="2500">
+        </div>
+        <div class="form-group">
+            <label>Upload Image</label>
+            <input type="file" id="newImgFile" accept="image/*">
+        </div>
+        <div class="form-group">
+            <label>Inventory Status</label>
+            <select id="newStatus">
+                <option value="Available">Available</option>
+                <option value="Sold Out">Sold Out</option>
+            </select>
+        </div>
+        <button class="add-btn" onclick="addItem()">+ ADD ITEM</button>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Img</th>
+                    <th style="width: 20%;">Item Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Promo Price</th>
+                    <th style="width: 20%;">Change Image</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="menuTableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const API_URL = "http://127.0.0.1:5000";
+
+    function showToast(msg, color = "#333") {
+        const t = document.getElementById("toast");
+        t.innerText = msg; t.style.backgroundColor = color;
+        t.className = "show"; setTimeout(() => { t.className = ""; }, 3000);
+    }
+
+    // Helper to convert File to Base64 String
+    function toBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+    }
+
+    async function loadMenu() {
+        try {
+            const res = await fetch(`${API_URL}/get_menu`);
+            const menu = await res.json();
+            const tbody = document.getElementById('menuTableBody');
+            tbody.innerHTML = '';
+
+            menu.forEach(item => {
+                const displayImg = item.image || 'https://via.placeholder.com/50';
+                tbody.innerHTML += `
+                    <tr>
+                        <td><img src="${displayImg}" class="img-preview" id="prev-${item.id}" onerror="this.src='https://via.placeholder.com/50'"></td>
+                        <td><input type="text" id="n-${item.id}" class="table-input" value="${item.name}"></td>
+                        <td>
+                            <select id="c-${item.id}" class="table-input">
+                                <option value="Dishes" ${item.category === 'Dishes' ? 'selected' : ''}>Dishes</option>
+                                <option value="Snacks" ${item.category === 'Snacks' ? 'selected' : ''}>Snacks</option>
+                            </select>
+                        </td>
+                        <td><input type="number" id="p-${item.id}" class="table-input" value="${item.price}"></td>
+                        <td><input type="number" id="pr-${item.id}" class="table-input promo-input" value="${item.promo_price || 0}"></td>
+                        <td><input type="file" id="file-${item.id}" class="table-input" accept="image/*"></td>
+                        <td>
+                            <select id="s-${item.id}" class="table-input">
+                                <option value="Available" ${item.status === 'Available' ? 'selected' : ''}>Available</option>
+                                <option value="Sold Out" ${item.status === 'Sold Out' ? 'selected' : ''}>Sold Out</option>
+                            </select>
+                        </td>
+                        <td><button class="save-btn" onclick="updateItem('${item.id}', '${item.image || ''}')">UPDATE</button></td>
+                    </tr>
+                `;
+            });
+        } catch (err) { showToast("Connection Failed", "#e74c3c"); }
+    }
+
+    async function addItem() {
+        const fileInput = document.getElementById('newImgFile');
+        let imageStr = "";
+
+        if (fileInput.files.length > 0) {
+            imageStr = await toBase64(fileInput.files[0]);
+        }
+
+        const payload = {
+            name: document.getElementById('newName').value,
+            category: document.getElementById('newCategory').value,
+            price: parseInt(document.getElementById('newPrice').value),
+            image: imageStr,
+            status: document.getElementById('newStatus').value,
+            promo_price: 0
+        };
+
+        if(!payload.name || isNaN(payload.price)) return showToast("Name and Price required", "#e67e22");
+
+        try {
+            const res = await fetch(`${API_URL}/add_menu_item`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            if(res.ok) {
+                showToast("Item Added!", "#27ae60");
+                document.getElementById('newName').value = '';
+                document.getElementById('newPrice').value = '';
+                document.getElementById('newImgFile').value = '';
+                loadMenu();
+            }
+        } catch (err) { showToast("Error adding item", "#e74c3c"); }
+    }
+
+    async function updateItem(id, existingImage) {
+        const fileInput = document.getElementById(`file-${id}`);
+        let imageStr = existingImage;
+
+        if (fileInput.files.length > 0) {
+            imageStr = await toBase64(fileInput.files[0]);
+        }
+
+        const payload = {
+            id: id,
+            name: document.getElementById(`n-${id}`).value,
+            category: document.getElementById(`c-${id}`).value,
+            price: parseInt(document.getElementById(`p-${id}`).value),
+            promo_price: parseInt(document.getElementById(`pr-${id}`).value),
+            image: imageStr,
+            status: document.getElementById(`s-${id}`).value
+        };
+
+        try {
+            const res = await fetch(`${API_URL}/update_menu_item`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            if(res.ok) {
+                showToast("Update Successful!", "#27ae60");
+                loadMenu();
+            }
+        } catch (err) { showToast("Update Failed", "#e74c3c"); }
+    }
+
+    loadMenu();
+</script>
+
+</body>
+</html>
