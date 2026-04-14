@@ -95,12 +95,22 @@
     </a>
 </div>
 
-<a href="login.html" class="logout-btn">Log Out Securely</a>
+<button onclick="logout()">Log Out Securely</button>
 
 <script>
     // Just to make it feel personal
     const adminName = localStorage.getItem('admin_name') || "Chef";
     document.getElementById('adminGreeting').innerText = `Welcome back, ${adminName}`;
+    function logout() {
+    // 1. Clear the saved user data from the browser
+    localStorage.removeItem('user_email');
+    localStorage.removeItem('user_name');
+    localStorage.removeItem('admin_name'); // If it's the admin portal
+    
+    // 2. Redirect back to your main login page (index.html)
+    // Using a relative path prevents the 404 error
+    window.location.href = '/'; 
+}
 </script>
 
 </body>

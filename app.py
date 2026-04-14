@@ -476,6 +476,10 @@ def root():
 @app.route('/<path:path>')
 def serve_any_file(path):
     return send_from_directory(BASE_DIR, path)
+@app.route('/logout')
+def logout_redirect():
+    # This automatically sends anyone who hits /logout back to the home page
+    return root()
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
