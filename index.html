@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-   <meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>Admin Portal | O'Xela Kitchen</title>
+    <title>Admin Portal | O'Xela Kitchen</title>
     
     <link rel="manifest" href="/static/manifest.json">
     <style>
@@ -69,7 +69,8 @@
 </div>
 
 <script>
-    const API_URL = "http://127.0.0.1:5000";
+    /* UPDATED: Removed localhost so it works on Render automatically */
+    const API_URL = window.location.origin;
 
     function showToast(msg, color = "#333") {
         const toast = document.getElementById("toast");
@@ -105,7 +106,7 @@
                 showToast(data.error || "Invalid Credentials", "#e74c3c");
             }
         } catch (err) {
-            showToast("Server Error. Is Flask running?", "#e74c3c");
+            showToast("Server Error. Check your internet or Flask logs.", "#e74c3c");
         }
     }
 
