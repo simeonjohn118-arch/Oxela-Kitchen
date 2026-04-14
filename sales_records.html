@@ -207,8 +207,8 @@
 </main>
 
 <script>
-    const API_URL = "http://127.0.0.1:5000";
-
+    const API_URL = window.location.origin;
+    
     async function fetchSalesData() {
         try {
             const res = await fetch(`${API_URL}/get_sales_stats`);
