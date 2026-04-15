@@ -58,7 +58,14 @@ for db_file in [USERS_DB, ORDERS_DB, SPECIAL_ORDERS_DB, MENU_DB, STAFF_DB, MESSA
 
 if not os.path.exists(CONFIG_DB):
     with open(CONFIG_DB, 'w') as f:
-        json.dump({"open_time": "08:00", "close_time": "22:00", "manual_closed": False}, f)
+        # UPDATED: Added promo and discount fields for management
+        json.dump({
+            "open_time": "08:00", 
+            "close_time": "22:00", 
+            "manual_closed": False,
+            "promo_type": "None",
+            "discount_percent": 0
+        }, f)
 
 pending_verifications = {}
 password_reset_codes = {}
@@ -71,6 +78,22 @@ def load_data(file_path):
 
 def save_data(file_path, data):
     with open(file_path, 'w') as f: json.dump(data, f, indent=4)
+
+# --- NEW: SOCIAL PROOF TICKER ROUTE ---
+@app.route('/get_order_ticker', methods=['GET'])
+def get_order_ticker():
+    orders = load_data(ORDERS_DB)
+    recent = orders[-10:] # Last 10 orders
+    ticker_data = []
+    for o in recent:
+        name = o.get('customer_name', 'A Customer')
+        # Privacy Masking (e.g. Simeon -> S***on)
+        masked_name = name[0] + "***" + name[-1] if len(name) > 2 else "User"
+        ticker_data.append({
+            "msg": f"{masked_name} just ordered a {o.get('total')} combo! 🔥",
+            "time": o.get('timestamp')
+        })
+    return jsonify(ticker_data[::-1]), 200
 
 # --- DELIVERY ZONE ROUTES ---
 
@@ -181,7 +204,9 @@ def send_order_notification(order_data, order_type="REGULAR"):
         if items:
             body += "\nItems Ordered:\n"
             for item in items:
-                body += f"- {item.get('name')} ({item.get('price')})\n"
+                # Updated for new quantity display
+                qty = item.get('quantity', 1)
+                body += f"- {item.get('name')} (Qty: {qty}) - {item.get('price')}\n"
     send_smtp_email(EMAIL_RECEIVER, subject, body)
 
 @app.route('/get_menu', methods=['GET'])
@@ -258,19 +283,36 @@ def login():
     if user: return jsonify({"status": "success", "user": user}), 200
     return jsonify({"message": "Invalid login"}), 401
 
+# --- UPDATED: SUBMIT ORDER WITH INVENTORY LOGIC ---
 @app.route('/submit_order', methods=['POST'])
 def submit_order():
     data = request.json
     orders = load_data(ORDERS_DB)
-    specials = load_data(SPECIAL_ORDERS_DB)
+    menu = load_data(MENU_DB)
+    
+    # NEW: Automatic Inventory Check & Subtraction
+    for cart_item in data.get('items', []):
+        for menu_item in menu:
+            if str(menu_item.get('id')) == str(cart_item.get('id')):
+                current_stock = int(menu_item.get('quantity', 0))
+                order_qty = int(cart_item.get('quantity', 1))
+                if current_stock < order_qty:
+                    return jsonify({"message": f"Sorry, {menu_item.get('name')} just sold out!"}), 400
+                menu_item['quantity'] = current_stock - order_qty
+
+    save_data(MENU_DB, menu)
+    
     now = datetime.now()
-    all_combined = orders + specials
+    all_combined = orders + load_data(SPECIAL_ORDERS_DB)
     today_str = now.strftime('%Y-%m-%d')
     today_count = len([o for o in all_combined if str(o.get('timestamp', '')).startswith(today_str)])
+    
     data['order_id'] = f"OX-{now.strftime('%Y%m%d')}-{(today_count + 1):03d}"
     data['timestamp'] = now.strftime("%Y-%m-%d %H:%M:%S")
     data['status'] = "PENDING"
+    
     if 'user_email' not in data: return jsonify({"message": "User session missing"}), 400
+    
     orders.append(data)
     save_data(ORDERS_DB, orders)
     send_order_notification(data, "REGULAR")
@@ -311,7 +353,7 @@ def get_user_orders(email):
     orders = load_data(ORDERS_DB)
     specials = load_data(SPECIAL_ORDERS_DB)
     combined = [o for o in orders if o.get('user_email') == email] + \
-               [s for s in specials if s.get('user_email') == email]
+                [s for s in specials if s.get('user_email') == email]
     return jsonify(combined), 200
 
 @app.route('/get_profile/<email>', methods=['GET'])
@@ -363,6 +405,7 @@ def update_menu_item():
     menu = load_data(MENU_DB)
     for item in menu:
         if str(item.get('id')) == str(data.get('id')):
+            # NEW: Can now update 'quantity', 'category', and 'price'
             item.update(data)
             break
     save_data(MENU_DB, menu)
@@ -374,6 +417,9 @@ def add_menu_item():
     menu = load_data(MENU_DB)
     data['id'] = str(len(menu) + 1)
     if 'image' not in data: data['image'] = ""
+    # NEW: Default pro fields
+    if 'quantity' not in data: data['quantity'] = 0
+    if 'category' not in data: data['category'] = "Main"
     menu.append(data)
     save_data(MENU_DB, menu)
     return jsonify({"status": "success", "id": data['id']}), 201
@@ -476,12 +522,12 @@ def root():
 @app.route('/<path:path>')
 def serve_any_file(path):
     return send_from_directory(BASE_DIR, path)
+
 @app.route('/logout')
 def logout_redirect():
-    # This automatically sends anyone who hits /logout back to the home page
     return root()
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
-    print(f"O'XELA KITCHEN BACKEND IS STARTING ON PORT {port}...")
+    print(f"O'XELA KITCHEN PRO STARTING ON PORT {port}...")
     app.run(host='0.0.0.0', port=port)

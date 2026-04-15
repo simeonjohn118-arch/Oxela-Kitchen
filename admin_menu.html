@@ -1,12 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-   <meta charset="UTF-8">
-
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <link rel="manifest" href="/static/manifest.json">
-    <title>Master Menu | O'XELA KITCHEN</title>
+    <title>Master Menu | O'XELA KITCHEN PRO</title>
     <style>
         :root { 
             --oxela-orange: #e67e22; 
@@ -14,71 +12,63 @@
             --oxela-light: #f4f7f6;
             --success: #27ae60;
             --danger: #e74c3c;
+            --pro-purple: #8e44ad;
         }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--oxela-light); margin: 0; padding: 20px; color: #333; }
         
-        .container { max-width: 1300px; margin: auto; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        .container { max-width: 1400px; margin: auto; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
         
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--oxela-light); padding-bottom: 25px; margin-bottom: 30px; }
         .header h2 { color: var(--oxela-dark); margin: 0; font-size: 1.8rem; }
         .back-link { text-decoration: none; color: var(--oxela-orange); font-weight: bold; font-size: 0.9rem; transition: 0.3s; }
 
-        /* --- ADD ITEM SECTION --- */
+        .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 30px; }
+        
+        .pro-card { background: #fffdfb; padding: 20px; border-radius: 12px; border: 1px solid #eee; }
+        .inflation-card { border-left: 5px solid var(--danger); }
+        .promo-card { border-left: 5px solid var(--pro-purple); }
+
+        .dash-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 10px; }
+        
         .add-item-box { 
-            background: #fffdfb; 
-            padding: 25px; 
-            border-radius: 12px; 
-            border: 2px dashed var(--oxela-orange); 
-            margin-bottom: 40px; 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
-            gap: 20px; 
-            align-items: end; 
+            background: #fffdfb; padding: 25px; border-radius: 12px; border: 2px dashed var(--oxela-orange); 
+            margin-bottom: 40px; display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
+            gap: 15px; align-items: end; 
         }
         .form-group { display: flex; flex-direction: column; }
-        .form-group label { font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px; }
+        .form-group label { font-size: 0.8rem; font-weight: bold; color: #555; margin-bottom: 8px; }
         .form-group input, .form-group select { 
-            padding: 12px; 
-            border: 1px solid #ddd; 
-            border-radius: 8px; 
-            font-size: 0.95rem;
-            outline-color: var(--oxela-orange);
-            background: white;
+            padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem; outline-color: var(--oxela-orange);
         }
-        .add-btn { 
-            background: var(--success); 
-            color: white; border: none; padding: 12px; border-radius: 8px; 
-            cursor: pointer; font-weight: bold; font-size: 1rem; transition: 0.3s; height: 48px;
-        }
-        .add-btn:hover { background: #219150; transform: translateY(-2px); }
 
-        /* --- TABLE STYLING --- */
-        .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
-        th { text-align: left; background: var(--oxela-light); padding: 18px; color: #666; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
-        td { padding: 15px 18px; border-bottom: 1px solid #f0f0f0; }
+        .combo-manager { background: #fdf2f2; padding: 10px; border-radius: 8px; margin-top: 15px; border: 1px solid #fadbd8; }
+        .combo-tag { 
+            display: inline-flex; align-items: center; background: white; padding: 5px 10px; 
+            border-radius: 20px; border: 1px solid #ddd; margin: 5px; font-size: 0.85rem;
+        }
+        .combo-tag input { border: none; width: 60px; font-weight: bold; color: var(--danger); margin-left: 5px; outline: none; }
         
-        .img-preview { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; background: #eee; border: 1px solid #ddd; }
+        .add-btn { background: var(--success); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9rem; transition: 0.3s; height: 42px; }
 
-        .table-input { 
-            width: 100%; padding: 10px; border: 1px solid #eee; border-radius: 6px; font-size: 0.9rem;
-        }
-        .table-input[type="file"] { font-size: 0.7rem; padding: 5px; }
-        .table-input:focus { border-color: var(--oxela-orange); outline: none; background: #fffcf9; }
-        .promo-input { border: 2px solid var(--oxela-orange) !important; color: var(--oxela-dark); font-weight: 700; }
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 1100px; }
+        th { text-align: left; background: var(--oxela-light); padding: 15px; color: #666; font-size: 0.8rem; text-transform: uppercase; }
+        td { padding: 12px 15px; border-bottom: 1px solid #f0f0f0; }
+        
+        .img-preview { width: 45px; height: 45px; border-radius: 6px; object-fit: cover; background: #eee; }
+        .table-input { width: 100%; padding: 8px; border: 1px solid #eee; border-radius: 6px; font-size: 0.85rem; }
+        .stock-input { font-weight: bold; color: var(--pro-purple); border: 1px solid #dcd0ff; }
+        
+        .save-btn { background: var(--oxela-orange); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.8rem; }
 
-        .save-btn { background: var(--oxela-orange); color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .save-btn:hover { background: var(--oxela-dark); }
-
-        /* --- TOAST --- */
         #toast {
-            visibility: hidden; min-width: 300px; background-color: #333; color: #fff; text-align: center;
-            border-radius: 12px; padding: 20px; position: fixed; z-index: 1000; left: 50%; bottom: 40px;
-            transform: translateX(-50%); font-weight: 500; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center;
+            border-radius: 10px; padding: 16px; position: fixed; z-index: 1000; left: 50%; bottom: 30px;
+            transform: translateX(-50%);
         }
         #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
-        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 40px; opacity: 1;} }
-        @keyframes fadeout { from {bottom: 40px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
     </style>
 </head>
 <body>
@@ -87,20 +77,63 @@
 
 <div class="container">
     <div class="header">
-        <h2>Master Menu Dashboard</h2>
+        <h2>Master Menu Dashboard <span style="font-size: 0.8rem; background: var(--oxela-dark); color: white; padding: 4px 8px; border-radius: 5px; vertical-align: middle;">PRO</span></h2>
         <a href="admin_hub.html" class="back-link">← RETURN TO HUB</a>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="pro-card inflation-card">
+            <strong style="color: var(--danger)">📈 Inflation / Combo Price Manager</strong>
+            <p style="font-size: 0.75rem; color: #777; margin: 5px 0;">Add combo items (sides) here to update their prices across the entire menu instantly.</p>
+            
+            <div id="combo-list" class="dash-row">
+                <div class="combo-tag">Chicken: ₦<input type="number" class="inflation-val" data-match="Chicken" value="1200"></div>
+                <div class="combo-tag">Egg: ₦<input type="number" class="inflation-val" data-match="Egg" value="300"></div>
+                <div class="combo-tag">Meat: ₦<input type="number" class="inflation-val" data-match="Meat" value="800"></div>
+            </div>
+
+            <div class="combo-manager">
+                <div class="dash-row" style="margin-top:0;">
+                    <input type="text" id="customComboName" placeholder="New side (e.g. Fish)" style="padding:8px; border-radius:5px; border:1px solid #ddd; flex:1;">
+                    <input type="number" id="customComboPrice" placeholder="Price" style="padding:8px; border-radius:5px; border:1px solid #ddd; width:80px;">
+                    <button class="add-btn" style="height:35px; padding:0 15px;" onclick="addNewComboRow()">+ ADD SIDE</button>
+                    <button class="save-btn" style="background: var(--danger); height:35px;" onclick="applyInflation()">APPLY TO ALL ITEMS</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="pro-card promo-card">
+            <strong style="color: var(--pro-purple)">🎊 Global Promotion</strong>
+            <div class="form-group" style="margin-top:10px;">
+                <label>Promo Type</label>
+                <select id="globalPromoType">
+                    <option value="None">No Active Promo</option>
+                    <option value="Christmas">Christmas Special</option>
+                    <option value="Sallah">Sallah Celebration</option>
+                    <option value="Easter">Easter</option>
+                    <option value="New Year">New Year</option>
+                    <option value="Independence">Independence Day</option>
+                </select>
+            </div>
+            <div class="dash-row">
+                <div class="form-group" style="flex:1"><label>Discount (%)</label><input type="number" id="globalDiscount" value="0"></div>
+                <button class="save-btn" style="background: var(--pro-purple); margin-top: 20px;" onclick="applyGlobalPromo()">ACTIVATE</button>
+            </div>
+        </div>
     </div>
 
     <div class="add-item-box">
         <div class="form-group">
             <label>Dish Name</label>
-            <input type="text" id="newName" placeholder="e.g. Special Meatpie">
+            <input type="text" id="newName" placeholder="e.g. Jollof Rice">
         </div>
         <div class="form-group">
             <label>Category</label>
             <select id="newCategory">
-                <option value="Dishes">Dishes</option>
+                <option value="Main Dish">Main Dish</option>
+                <option value="Side/Protein">Side/Protein</option>
                 <option value="Snacks">Snacks</option>
+                <option value="Drinks">Drinks</option>
             </select>
         </div>
         <div class="form-group">
@@ -108,7 +141,11 @@
             <input type="number" id="newPrice" placeholder="2500">
         </div>
         <div class="form-group">
-            <label>Upload Image</label>
+            <label>Initial Stock</label>
+            <input type="number" id="newQty" value="50">
+        </div>
+        <div class="form-group">
+            <label>Image</label>
             <input type="file" id="newImgFile" accept="image/*">
         </div>
         <div class="form-group">
@@ -126,11 +163,12 @@
             <thead>
                 <tr>
                     <th>Img</th>
-                    <th style="width: 20%;">Item Name</th>
+                    <th style="width: 15%;">Item Name</th>
                     <th>Category</th>
-                    <th>Price</th>
+                    <th>Base Price</th>
+                    <th>Stock Qty</th>
                     <th>Promo Price</th>
-                    <th style="width: 20%;">Change Image</th>
+                    <th style="width: 15%;">Change Image</th>
                     <th>Status</th>
                     <th>Action</th>
                 </tr>
@@ -149,7 +187,6 @@
         t.className = "show"; setTimeout(() => { t.className = ""; }, 3000);
     }
 
-    // Helper to convert File to Base64 String
     function toBase64(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -165,7 +202,6 @@
             const menu = await res.json();
             const tbody = document.getElementById('menuTableBody');
             tbody.innerHTML = '';
-
             menu.forEach(item => {
                 const displayImg = item.image || 'https://via.placeholder.com/50';
                 tbody.innerHTML += `
@@ -174,12 +210,15 @@
                         <td><input type="text" id="n-${item.id}" class="table-input" value="${item.name}"></td>
                         <td>
                             <select id="c-${item.id}" class="table-input">
-                                <option value="Dishes" ${item.category === 'Dishes' ? 'selected' : ''}>Dishes</option>
+                                <option value="Main Dish" ${item.category === 'Main Dish' ? 'selected' : ''}>Main Dish</option>
+                                <option value="Side/Protein" ${item.category === 'Side/Protein' ? 'selected' : ''}>Side/Protein</option>
                                 <option value="Snacks" ${item.category === 'Snacks' ? 'selected' : ''}>Snacks</option>
+                                <option value="Drinks" ${item.category === 'Drinks' ? 'selected' : ''}>Drinks</option>
                             </select>
                         </td>
                         <td><input type="number" id="p-${item.id}" class="table-input" value="${item.price}"></td>
-                        <td><input type="number" id="pr-${item.id}" class="table-input promo-input" value="${item.promo_price || 0}"></td>
+                        <td><input type="number" id="q-${item.id}" class="table-input stock-input" value="${item.quantity || 0}"></td>
+                        <td><input type="number" id="pr-${item.id}" class="table-input" style="color:var(--oxela-dark)" value="${item.promo_price || 0}"></td>
                         <td><input type="file" id="file-${item.id}" class="table-input" accept="image/*"></td>
                         <td>
                             <select id="s-${item.id}" class="table-input">
@@ -194,6 +233,61 @@
         } catch (err) { showToast("Connection Failed", "#e74c3c"); }
     }
 
+    function addNewComboRow() {
+        const name = document.getElementById('customComboName').value;
+        const price = document.getElementById('customComboPrice').value;
+        if(!name || !price) return showToast("Name and Price required", "#e67e22");
+        
+        const container = document.getElementById('combo-list');
+        const div = document.createElement('div');
+        div.className = "combo-tag";
+        div.innerHTML = `${name}: ₦<input type="number" class="inflation-val" data-match="${name}" value="${price}">`;
+        container.appendChild(div);
+        
+        document.getElementById('customComboName').value = '';
+        document.getElementById('customComboPrice').value = '';
+    }
+
+    async function applyInflation() {
+        const comboInputs = document.querySelectorAll('.inflation-val');
+        const res = await fetch(`${API_URL}/get_menu`);
+        const menu = await res.json();
+        let updateCount = 0;
+
+        for(let input of comboInputs) {
+            const matchWord = input.getAttribute('data-match').toLowerCase();
+            const newPrice = parseInt(input.value);
+
+            for(let item of menu) {
+                if(item.name.toLowerCase().includes(matchWord)) {
+                    item.price = newPrice;
+                    await fetch(`${API_URL}/update_menu_item`, {
+                        method: 'POST', headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(item)
+                    });
+                    updateCount++;
+                }
+            }
+        }
+        showToast(`Updated ${updateCount} items!`, "#e74c3c");
+        loadMenu();
+    }
+
+    async function applyGlobalPromo() {
+        const discount = parseInt(document.getElementById('globalDiscount').value);
+        const res = await fetch(`${API_URL}/get_menu`);
+        const menu = await res.json();
+        for(let item of menu) {
+            item.promo_price = discount > 0 ? Math.round(item.price * (1 - (discount/100))) : 0;
+            await fetch(`${API_URL}/update_menu_item`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(item)
+            });
+        }
+        showToast(`Global Promo Applied!`, "#8e44ad");
+        loadMenu();
+    }
+
     async function addItem() {
         const fileInput = document.getElementById('newImgFile');
         let imageStr = "";
@@ -206,6 +300,7 @@
             name: document.getElementById('newName').value,
             category: document.getElementById('newCategory').value,
             price: parseInt(document.getElementById('newPrice').value),
+            quantity: parseInt(document.getElementById('newQty').value) || 0,
             image: imageStr,
             status: document.getElementById('newStatus').value,
             promo_price: 0
@@ -222,6 +317,7 @@
                 showToast("Item Added!", "#27ae60");
                 document.getElementById('newName').value = '';
                 document.getElementById('newPrice').value = '';
+                document.getElementById('newQty').value = '50';
                 document.getElementById('newImgFile').value = '';
                 loadMenu();
             }
@@ -241,6 +337,7 @@
             name: document.getElementById(`n-${id}`).value,
             category: document.getElementById(`c-${id}`).value,
             price: parseInt(document.getElementById(`p-${id}`).value),
+            quantity: parseInt(document.getElementById(`q-${id}`).value),
             promo_price: parseInt(document.getElementById(`pr-${id}`).value),
             image: imageStr,
             status: document.getElementById(`s-${id}`).value
@@ -260,6 +357,5 @@
 
     loadMenu();
 </script>
-
 </body>
 </html>
