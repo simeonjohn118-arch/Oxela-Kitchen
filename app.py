@@ -553,7 +553,21 @@ def serve_any_file(path):
 @app.route('/logout')
 def logout_redirect():
     return root()
+@app.route('/reduce_stock', methods=['POST'])
+def reduce_stock():
+    data = request.json
+    item_id = data.get('id')
+    reduce_by = int(data.get('reduceBy', 1))
 
+    # MongoDB: $inc with a negative number reduces the value
+    result = db.menu.update_one(
+        {"id": item_id},
+        {"$inc": {"quantity": -reduce_by}}
+    )
+
+    if result.modified_count > 0:
+        return jsonify({"success": True}), 200
+    return jsonify({"error": "Item not found"}), 404
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     print(f"O'XELA KITCHEN PRO STARTING ON PORT {port}...")
