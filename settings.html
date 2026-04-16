@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>O'XELA | Staff Command</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-        <link rel="manifest" href="/static/manifest.json">
+    <link rel="manifest" href="/static/manifest.json">
     <style>
         :root { 
             --accent: #ff6b6b; 
@@ -66,7 +66,7 @@
         .toggle-switch.on { background: var(--accent); }
         .toggle-switch.on::after { left: 29px; }
 
-        input[type="time"] { 
+        input[type="time"], input[type="text"], input[type="color"] { 
             background: #1a1a1a; border: 1px solid #333; color: white; padding: 15px; border-radius: 15px; color-scheme: dark; font-weight: 700;
         }
 
@@ -75,6 +75,13 @@
             border-radius: 20px; font-weight: 800; cursor: pointer; transition: 0.3s; margin-top: 10px;
         }
         .save-btn:hover { background: var(--accent); color: white; transform: translateY(-3px); box-shadow: var(--glow); }
+
+        /* --- IMAGE UPLOAD PREVIEW --- */
+        .image-preview-container {
+            width: 100%; height: 150px; background: #0a0a0a; border-radius: 20px; margin-top: 15px;
+            border: 2px dashed #333; display: flex; align-items: center; justify-content: center; overflow: hidden;
+        }
+        .image-preview-container img { width: 100%; height: 100%; object-fit: cover; }
 
         /* --- TOAST --- */
         #customAlert { 
@@ -134,6 +141,34 @@
             </div>
 
             <div class="admin-card">
+                <div class="section-title">🎉 Festive Mode Control</div>
+                
+                <div class="control-item">
+                    <div>
+                        <p style="font-weight: 700;">Active Mode</p>
+                        <p style="font-size: 0.8rem; color: var(--text-dim);">Show celebration banner on home</p>
+                    </div>
+                    <div class="toggle-switch" id="festiveActive" onclick="toggleSwitch('festiveActive')"></div>
+                </div>
+
+                <div style="margin-top: 15px;">
+                    <label style="font-size: 0.7rem; font-weight: 800; color: var(--text-dim); display: block; margin-bottom: 5px;">BANNER TITLE</label>
+                    <input type="text" id="festiveTitle" placeholder="e.g. Merry Christmas" style="width: 100%; margin-bottom: 15px;">
+                    
+                    <label style="font-size: 0.7rem; font-weight: 800; color: var(--text-dim); display: block; margin-bottom: 5px;">THEME COLOR</label>
+                    <input type="color" id="festiveColor" style="width: 100%; height: 50px; border: none; cursor: pointer; margin-bottom: 15px;">
+
+                    <label style="font-size: 0.7rem; font-weight: 800; color: var(--text-dim); display: block; margin-bottom: 5px;">CELEBRATION IMAGE (UPLOAD)</label>
+                    <input type="file" id="festiveImage" accept="image/*" style="width: 100%;" onchange="previewFestiveImage(this)">
+                    
+                    <div class="image-preview-container" id="previewBox">
+                        <p style="color: #333; font-weight: 800;">No Image Selected</p>
+                    </div>
+                </div>
+                <button class="save-btn" style="margin-top: 20px; background: var(--accent); color: white;" onclick="saveFestive()">Deploy Festive Mode 🚀</button>
+            </div>
+
+            <div class="admin-card">
                 <div class="section-title">🎨 UI Personalization</div>
                 
                 <p style="font-size: 0.8rem; font-weight: 700; margin-bottom: 10px;">DASHBOARD THEME</p>
@@ -165,7 +200,7 @@
     <div id="customAlert"><div class="dot"></div> <span id="alertMsg"></span></div>
 
     <script>
-  const API_URL = window.location.origin;
+        const API_URL = window.location.origin;
 
         function showToast(msg) {
             const alert = document.getElementById('customAlert');
@@ -195,8 +230,43 @@
             showToast(`Theme: ${theme.toUpperCase()}`);
         }
 
+        function previewFestiveImage(input) {
+            const box = document.getElementById('previewBox');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    box.innerHTML = `<img src="${e.target.result}">`;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        async function saveFestive() {
+            const formData = new FormData();
+            const imageFile = document.getElementById('festiveImage').files[0];
+            
+            formData.append('active', document.getElementById('festiveActive').classList.contains('on'));
+            formData.append('title', document.getElementById('festiveTitle').value);
+            formData.append('theme_color', document.getElementById('festiveColor').value);
+            
+            if (imageFile) {
+                formData.append('image', imageFile);
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/update_festive`, {
+                    method: 'POST',
+                    body: formData // No headers needed for FormData
+                });
+                if (res.ok) {
+                    showToast("Festive Settings Deployed! 🎊");
+                }
+            } catch (e) {
+                showToast("Failed to upload festive settings ❌");
+            }
+        }
+
         async function saveSystem() {
-            // Pack the data exactly how the Python route expects it
             const config = {
                 open_time: document.getElementById('openTime').value,
                 close_time: document.getElementById('closeTime').value,
@@ -218,26 +288,31 @@
         }
 
         window.onload = async () => {
-            // Load current status from Python to sync the inputs when page opens
             try {
-                const res = await fetch(`${API_URL}/get_store_status`);
-                const data = await res.json();
-                
-                if (data.config) {
-                    document.getElementById('openTime').value = data.config.open_time || "08:00";
-                    document.getElementById('closeTime').value = data.config.close_time || "22:00";
-                    
-                    if(data.config.manual_closed) {
-                        document.getElementById('manualClose').classList.add('on');
-                    } else {
-                        document.getElementById('manualClose').classList.remove('on');
+                // Load Store Status
+                const resStore = await fetch(`${API_URL}/get_store_status`);
+                const dataStore = await resStore.json();
+                if (dataStore.config) {
+                    document.getElementById('openTime').value = dataStore.config.open_time || "08:00";
+                    document.getElementById('closeTime').value = dataStore.config.close_time || "22:00";
+                    if(dataStore.config.manual_closed) document.getElementById('manualClose').classList.add('on');
+                }
+
+                // Load Festive Status
+                const resFestive = await fetch(`${API_URL}/get_festive_settings`);
+                const dataFestive = await resFestive.json();
+                if (dataFestive) {
+                    document.getElementById('festiveTitle').value = dataFestive.title;
+                    document.getElementById('festiveColor').value = dataFestive.theme_color;
+                    if(dataFestive.active) document.getElementById('festiveActive').classList.add('on');
+                    if(dataFestive.image_url) {
+                        document.getElementById('previewBox').innerHTML = `<img src="${dataFestive.image_url}">`;
                     }
                 }
             } catch(e) {
-                console.log("Could not load initial config");
+                console.log("Could not load initial settings");
             }
         };
-        
     </script>
 </body>
 </html>

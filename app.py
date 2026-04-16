@@ -7,6 +7,8 @@ import random
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
+from werkzeug.utils import secure_filename
+
 # --- DATABASE TOOLS ---
 from pymongo import MongoClient
 from bson.objectid import ObjectId
@@ -18,6 +20,18 @@ CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 # Allow up to 16MB for image uploads
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 
+
+# --- FESTIVE UPLOAD CONFIG ---
+FESTIVE_UPLOAD_FOLDER = 'static/uploads/festive'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+if not os.path.exists(FESTIVE_UPLOAD_FOLDER):
+    os.makedirs(FESTIVE_UPLOAD_FOLDER)
+
+app.config['FESTIVE_UPLOAD_FOLDER'] = FESTIVE_UPLOAD_FOLDER
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # --- EMAIL CONFIGURATION ---
 EMAIL_SENDER = "simeonjohn118@gmail.com" 
@@ -553,6 +567,7 @@ def serve_any_file(path):
 @app.route('/logout')
 def logout_redirect():
     return root()
+
 @app.route('/reduce_stock', methods=['POST'])
 def reduce_stock():
     data = request.json
@@ -568,6 +583,48 @@ def reduce_stock():
     if result.modified_count > 0:
         return jsonify({"success": True}), 200
     return jsonify({"error": "Item not found"}), 404
+
+# --- DYNAMIC FESTIVE LOGIC ---
+
+# Storage for festive settings
+festive_config = {
+    "active": False,
+    "title": "Hungry? Order Now!",
+    "image_url": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=500&q=60",
+    "theme_color": "#e67e22"
+}
+
+# Serve the uploaded festive images
+@app.route('/static/uploads/festive/<filename>')
+def serve_festive_image(filename):
+    return send_from_directory(app.config['FESTIVE_UPLOAD_FOLDER'], filename)
+
+# Website gets settings
+@app.route('/get_festive_settings', methods=['GET'])
+def get_festive_settings():
+    return jsonify(festive_config)
+
+# Master App updates settings (with image upload)
+@app.route('/update_festive', methods=['POST'])
+def update_festive():
+    global festive_config
+    
+    # Handle Image Upload if present
+    if 'image' in request.files:
+        file = request.files['image']
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['FESTIVE_UPLOAD_FOLDER'], filename))
+            # Build URL for your Render app
+            festive_config['image_url'] = f"https://oxela-kitchen.onrender.com/static/uploads/festive/{filename}"
+
+    # Update text and toggle from Form Data
+    festive_config['active'] = request.form.get('active') == 'true'
+    festive_config['title'] = request.form.get('title', festive_config['title'])
+    festive_config['theme_color'] = request.form.get('theme_color', festive_config['theme_color'])
+    
+    return jsonify({"message": "Festive theme updated successfully!", "current": festive_config})
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     print(f"O'XELA KITCHEN PRO STARTING ON PORT {port}...")
