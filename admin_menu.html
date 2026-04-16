@@ -191,10 +191,11 @@
 </div>
 
 <script>
-    const API_URL = window.location.origin;
+  const API_URL = window.location.origin;
 
     function showToast(msg, color = "#333") {
         const t = document.getElementById("toast");
+        if (!t) return; // Safety check
         t.innerText = msg; t.style.backgroundColor = color;
         t.className = "show"; setTimeout(() => { t.className = ""; }, 3000);
     }
@@ -208,7 +209,7 @@
         });
     }
 
-   async function loadMenu() {
+    async function loadMenu() {
         try {
             const res = await fetch(`${API_URL}/get_menu`);
             const menu = await res.json();
@@ -217,8 +218,6 @@
             
             menu.forEach(item => {
                 const displayImg = item.image || 'https://via.placeholder.com/50';
-                
-                // We give the row an ID so we can remove it instantly from the UI
                 const row = document.createElement('tr');
                 row.id = `row-${item.id}`; 
                 
@@ -245,9 +244,9 @@
                         </select>
                     </td>
                     <td>
-                        <div style="display:flex; align-items:center; gap:8px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
                             <button class="save-btn" onclick="updateItem('${item.id}', '${item.image || ''}')">UPDATE</button>
-                            <button class="del-btn" style="background:none; color:var(--danger); font-size:1.2rem; border:none; cursor:pointer; padding:0 5px;" onclick="deleteItem('${item.id}')">✖</button>
+                            <span class="del-x" onclick="deleteItem('${item.id}')" style="color:#e74c3c; cursor:pointer; font-weight:bold; font-size:1.4rem; padding: 0 5px;">✖</span>
                         </div>
                     </td>
                 `;
@@ -259,12 +258,12 @@
     }
 
     async function deleteItem(id) {
-        // 1. Immediate UI Feedback (Remove from screen now)
+        // 1. Instant UI removal (No confirmation popup!)
         const row = document.getElementById(`row-${id}`);
         if (row) row.style.display = 'none';
 
         try {
-            // 2. Silent background delete
+            // 2. Background delete
             const res = await fetch(`${API_URL}/delete_menu_item/${id}`, {
                 method: 'DELETE'
             });
@@ -272,15 +271,16 @@
             if (res.ok) {
                 showToast("Item removed", "#e74c3c");
             } else {
-                // If the server fails, bring the row back so the user knows
                 if (row) row.style.display = 'table-row';
-                showToast("Delete failed on server", "#e74c3c");
+                showToast("Server error: Delete failed", "#e74c3c");
             }
         } catch (err) {
             if (row) row.style.display = 'table-row';
             showToast("Network Error", "#e74c3c");
         }
-    }    function addNewComboRow() {
+    }
+
+    function addNewComboRow() {
         const name = document.getElementById('customComboName').value;
         const price = document.getElementById('customComboPrice').value;
         if(!name || !price) return showToast("Name and Price required", "#e67e22");
@@ -296,28 +296,35 @@
     }
 
     async function applyInflation() {
-        const inputs = document.querySelectorAll('.inflation-val');
-        const res = await fetch(`${API_URL}/get_menu`);
-        const menu = await res.json();
-        let updateCount = 0;
+        try {
+            const inputs = document.querySelectorAll('.inflation-val');
+            const res = await fetch(`${API_URL}/get_menu`);
+            const menu = await res.json();
+            let updateCount = 0;
 
-        for(let input of inputs) {
-            const keyword = input.getAttribute('data-match').toLowerCase();
-            const newPrice = parseInt(input.value);
+            showToast("Applying price changes...", "#3498db");
 
-            for(let item of menu) {
-                if(item.name.toLowerCase().includes(keyword)) {
-                    item.price = newPrice;
-                    await fetch(`${API_URL}/update_menu_item`, {
-                        method: 'POST', headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify(item)
-                    });
-                    updateCount++;
+            for(let input of inputs) {
+                const keyword = input.getAttribute('data-match').toLowerCase();
+                const newPrice = parseInt(input.value);
+
+                for(let item of menu) {
+                    if(item.name.toLowerCase().includes(keyword)) {
+                        item.price = newPrice;
+                        await fetch(`${API_URL}/update_menu_item`, {
+                            method: 'POST', 
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify(item)
+                        });
+                        updateCount++;
+                    }
                 }
             }
+            showToast(`Updated ${updateCount} items!`, "#27ae60");
+            loadMenu();
+        } catch (err) {
+            showToast("Inflation update failed", "#e74c3c");
         }
-        showToast(`Updated ${updateCount} items!`, "#27ae60");
-        loadMenu();
     }
 
     async function applyGlobalPromo() {
@@ -336,91 +343,94 @@
     }
 
     async function addItem() {
+        const nameInput = document.getElementById('newName');
+        const priceInput = document.getElementById('newPrice');
+        const categoryInput = document.getElementById('newCategory');
+        const qtyInput = document.getElementById('newQty');
         const fileInput = document.getElementById('newImgFile');
-        let imageStr = "";
+        const statusInput = document.getElementById('newStatus');
 
+        if (!nameInput.value || !priceInput.value) {
+            return showToast("Name and Price are required!", "#e67e22");
+        }
+
+        let imageStr = "";
         if (fileInput.files.length > 0) {
-            imageStr = await toBase64(fileInput.files[0]);
+            try {
+                imageStr = await toBase64(fileInput.files[0]);
+            } catch (err) {
+                console.error("Image conversion failed", err);
+            }
         }
 
         const payload = {
-            name: document.getElementById('newName').value,
-            category: document.getElementById('newCategory').value,
-            price: parseInt(document.getElementById('newPrice').value),
-            quantity: parseInt(document.getElementById('newQty').value) || 0,
+            name: nameInput.value,
+            category: categoryInput.value,
+            price: parseInt(priceInput.value),
+            quantity: parseInt(qtyInput.value) || 0,
             image: imageStr,
-            status: document.getElementById('newStatus').value,
+            status: statusInput.value,
             promo_price: 0
         };
 
-        if(!payload.name || isNaN(payload.price)) return showToast("Name and Price required", "#e67e22");
-
         try {
+            showToast("Adding item...", "#3498db");
             const res = await fetch(`${API_URL}/add_menu_item`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(payload)
             });
-            if(res.ok) {
-                showToast("Item Added!", "#27ae60");
-                document.getElementById('newName').value = '';
-                document.getElementById('newPrice').value = '';
-                document.getElementById('newQty').value = '50';
-                document.getElementById('newImgFile').value = '';
+
+            if (res.ok) {
+                showToast("Item Added Successfully!", "#27ae60");
+                nameInput.value = '';
+                priceInput.value = '';
+                qtyInput.value = '50';
+                fileInput.value = '';
                 loadMenu();
+            } else {
+                showToast("Server rejected the item", "#e74c3c");
             }
-        } catch (err) { showToast("Error adding item", "#e74c3c"); }
+        } catch (err) { 
+            showToast("Network Error", "#e74c3c"); 
+        }
     }
 
     async function updateItem(id, existingImage) {
-        const fileInput = document.getElementById(`file-${id}`);
-        let imageStr = existingImage;
-
-        if (fileInput.files.length > 0) {
-            imageStr = await toBase64(fileInput.files[0]);
-        }
-
-        const payload = {
-            id: id,
-            name: document.getElementById(`n-${id}`).value,
-            category: document.getElementById(`c-${id}`).value,
-            price: parseInt(document.getElementById(`p-${id}`).value),
-            quantity: parseInt(document.getElementById(`q-${id}`).value),
-            promo_price: parseInt(document.getElementById(`pr-${id}`).value),
-            image: imageStr,
-            status: document.getElementById(`s-${id}`).value
-        };
-
         try {
+            const fileInput = document.getElementById(`file-${id}`);
+            let imageStr = existingImage;
+
+            if (fileInput && fileInput.files.length > 0) {
+                imageStr = await toBase64(fileInput.files[0]);
+            }
+
+            const payload = {
+                id: id,
+                name: document.getElementById(`n-${id}`).value,
+                category: document.getElementById(`c-${id}`).value,
+                price: parseInt(document.getElementById(`p-${id}`).value),
+                quantity: parseInt(document.getElementById(`q-${id}`).value),
+                promo_price: parseInt(document.getElementById(`pr-${id}`).value),
+                image: imageStr,
+                status: document.getElementById(`s-${id}`).value
+            };
+
             const res = await fetch(`${API_URL}/update_menu_item`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(payload)
             });
             if(res.ok) {
                 showToast("Update Successful!", "#27ae60");
                 loadMenu();
             }
-        } catch (err) { showToast("Update Failed", "#e74c3c"); }
-    }
-
-    async function deleteItem(id) {
-        if (!confirm("Are you sure you want to remove this item permanently?")) return;
-
-        try {
-            const res = await fetch(`${API_URL}/delete_menu_item/${id}`, {
-                method: 'DELETE'
-            });
-
-            if (res.ok) {
-                showToast("Item Removed!", "#e74c3c");
-                loadMenu(); 
-            } else {
-                showToast("Failed to delete", "#e74c3c");
-            }
-        } catch (err) {
-            showToast("Server Error", "#e74c3c");
+        } catch (err) { 
+            showToast("Update Failed", "#e74c3c"); 
         }
     }
 
+    // Initialize
     loadMenu();
 </script>
 </body>

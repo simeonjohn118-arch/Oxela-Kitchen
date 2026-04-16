@@ -22,7 +22,6 @@ EMAIL_PASSWORD = "qvsmwldprxaktxri"
 EMAIL_RECEIVER = "simeonjohn118@gmail.com" 
 
 # --- DATABASE SETUP ---
-# Using absolute path to ensure Render finds the files regardless of where the script runs
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 USERS_DB = os.path.join(BASE_DIR, 'users.json')
@@ -35,22 +34,7 @@ COMPLAINTS_DB = os.path.join(BASE_DIR, 'complaints.json')
 CONFIG_DB = os.path.join(BASE_DIR, 'config.json') 
 DELIVERY_DB = os.path.join(BASE_DIR, 'delivery_zones.json')
 
-# --- PWA & ASSET ROUTES ---
-
-@app.route('/manifest.json')
-def serve_manifest():
-    static_path = os.path.join(BASE_DIR, 'static')
-    response = send_from_directory(static_path, 'manifest.json', mimetype='application/manifest+json')
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response
-
-@app.route('/favicon.ico')
-def favicon():
-    icon_path = os.path.join(BASE_DIR, 'static', 'icons')
-    return send_from_directory(icon_path, 'icon-512.png', mimetype='image/png')
-
 # --- FILE INITIALIZER ---
-# This creates the files if they don't exist so the load_data function doesn't crash
 for db_file in [USERS_DB, ORDERS_DB, SPECIAL_ORDERS_DB, MENU_DB, STAFF_DB, MESSAGES_DB, COMPLAINTS_DB, DELIVERY_DB]:
     if not os.path.exists(db_file):
         with open(db_file, 'w') as f:
@@ -58,7 +42,6 @@ for db_file in [USERS_DB, ORDERS_DB, SPECIAL_ORDERS_DB, MENU_DB, STAFF_DB, MESSA
 
 if not os.path.exists(CONFIG_DB):
     with open(CONFIG_DB, 'w') as f:
-        # UPDATED: Added promo and discount fields for management
         json.dump({
             "open_time": "08:00", 
             "close_time": "22:00", 
@@ -79,15 +62,28 @@ def load_data(file_path):
 def save_data(file_path, data):
     with open(file_path, 'w') as f: json.dump(data, f, indent=4)
 
+# --- PWA & ASSET ROUTES ---
+
+@app.route('/manifest.json')
+def serve_manifest():
+    static_path = os.path.join(BASE_DIR, 'static')
+    response = send_from_directory(static_path, 'manifest.json', mimetype='application/manifest+json')
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
+@app.route('/favicon.ico')
+def favicon():
+    icon_path = os.path.join(BASE_DIR, 'static', 'icons')
+    return send_from_directory(icon_path, 'icon-512.png', mimetype='image/png')
+
 # --- NEW: SOCIAL PROOF TICKER ROUTE ---
 @app.route('/get_order_ticker', methods=['GET'])
 def get_order_ticker():
     orders = load_data(ORDERS_DB)
-    recent = orders[-10:] # Last 10 orders
+    recent = orders[-10:] 
     ticker_data = []
     for o in recent:
         name = o.get('customer_name', 'A Customer')
-        # Privacy Masking (e.g. Simeon -> S***on)
         masked_name = name[0] + "***" + name[-1] if len(name) > 2 else "User"
         ticker_data.append({
             "msg": f"{masked_name} just ordered a {o.get('total')} combo! 🔥",
@@ -110,13 +106,13 @@ def update_delivery_zone():
     price = data.get('price')
     zone_id = data.get('id')
 
-    if zone_id: # Updating existing
+    if zone_id: 
         for z in zones:
             if str(z.get('id')) == str(zone_id):
                 z['location'] = location
                 z['price'] = price
                 break
-    else: # Adding new
+    else: 
         new_zone = {
             "id": str(len(zones) + 1),
             "location": location,
@@ -204,7 +200,6 @@ def send_order_notification(order_data, order_type="REGULAR"):
         if items:
             body += "\nItems Ordered:\n"
             for item in items:
-                # Updated for new quantity display
                 qty = item.get('quantity', 1)
                 body += f"- {item.get('name')} (Qty: {qty}) - {item.get('price')}\n"
     send_smtp_email(EMAIL_RECEIVER, subject, body)
@@ -283,14 +278,12 @@ def login():
     if user: return jsonify({"status": "success", "user": user}), 200
     return jsonify({"message": "Invalid login"}), 401
 
-# --- UPDATED: SUBMIT ORDER WITH INVENTORY LOGIC ---
 @app.route('/submit_order', methods=['POST'])
 def submit_order():
     data = request.json
     orders = load_data(ORDERS_DB)
     menu = load_data(MENU_DB)
     
-    # NEW: Automatic Inventory Check & Subtraction
     for cart_item in data.get('items', []):
         for menu_item in menu:
             if str(menu_item.get('id')) == str(cart_item.get('id')):
@@ -405,7 +398,6 @@ def update_menu_item():
     menu = load_data(MENU_DB)
     for item in menu:
         if str(item.get('id')) == str(data.get('id')):
-            # NEW: Can now update 'quantity', 'category', and 'price'
             item.update(data)
             break
     save_data(MENU_DB, menu)
@@ -417,12 +409,23 @@ def add_menu_item():
     menu = load_data(MENU_DB)
     data['id'] = str(len(menu) + 1)
     if 'image' not in data: data['image'] = ""
-    # NEW: Default pro fields
     if 'quantity' not in data: data['quantity'] = 0
     if 'category' not in data: data['category'] = "Main"
     menu.append(data)
     save_data(MENU_DB, menu)
     return jsonify({"status": "success", "id": data['id']}), 201
+
+# --- NEW: DELETE MENU ITEM ROUTE ---
+@app.route('/delete_menu_item/<item_id>', methods=['DELETE'])
+def delete_menu_item(item_id):
+    menu = load_data(MENU_DB)
+    # Filter out the item with the matching ID
+    new_menu = [item for item in menu if str(item.get('id')) != str(item_id)]
+    
+    if len(new_menu) < len(menu):
+        save_data(MENU_DB, new_menu)
+        return jsonify({"success": True}), 200
+    return jsonify({"error": "Item not found"}), 404
 
 @app.route('/get_all_orders', methods=['GET'])
 def get_all_orders():
@@ -526,19 +529,6 @@ def serve_any_file(path):
 @app.route('/logout')
 def logout_redirect():
     return root()
-
-# To Save
-def save_data():
-    with open('menu.json', 'w') as f:
-        json.dump(fullMenu, f)
-
-# To Load (at the start of your app)
-try:
-    with open('menu.json', 'r') as f:
-        fullMenu = json.load(f)
-except:
-    fullMenu = []
-    
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
