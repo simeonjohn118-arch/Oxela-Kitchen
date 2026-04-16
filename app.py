@@ -7,6 +7,9 @@ import random
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
+# --- DATABASE TOOLS ---
+from pymongo import MongoClient
+from bson.objectid import ObjectId
 
 app = Flask(__name__)
 
@@ -20,6 +23,12 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 EMAIL_SENDER = "simeonjohn118@gmail.com" 
 EMAIL_PASSWORD = "qvsmwldprxaktxri" 
 EMAIL_RECEIVER = "simeonjohn118@gmail.com" 
+
+# --- MONGODB CLOUD SETUP ---
+MONGO_URI = "mongodb+srv://simeonjohn118_db_user:Simeon3991@cluster0.9j6otzp.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+client = MongoClient(MONGO_URI)
+db = client['oxela_kitchen']
+menu_collection = db['menu']
 
 # --- DATABASE SETUP ---
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -62,6 +71,14 @@ def load_data(file_path):
 def save_data(file_path, data):
     with open(file_path, 'w') as f: json.dump(data, f, indent=4)
 
+# --- HELPER FOR MONGODB ---
+def get_all_menu_from_db():
+    items = list(menu_collection.find())
+    for item in items:
+        item['id'] = str(item['_id'])
+        del item['_id']
+    return items
+
 # --- PWA & ASSET ROUTES ---
 
 @app.route('/manifest.json')
@@ -76,7 +93,7 @@ def favicon():
     icon_path = os.path.join(BASE_DIR, 'static', 'icons')
     return send_from_directory(icon_path, 'icon-512.png', mimetype='image/png')
 
-# --- NEW: SOCIAL PROOF TICKER ROUTE ---
+# --- SOCIAL PROOF TICKER ROUTE ---
 @app.route('/get_order_ticker', methods=['GET'])
 def get_order_ticker():
     orders = load_data(ORDERS_DB)
@@ -207,8 +224,8 @@ def send_order_notification(order_data, order_type="REGULAR"):
 @app.route('/get_menu', methods=['GET'])
 def get_menu():
     try:
-        menu_items = load_data(MENU_DB)
-        return jsonify(menu_items), 200
+        # NOW FETCHING FROM CLOUD DB
+        return jsonify(get_all_menu_from_db()), 200
     except Exception as e:
         return jsonify({"message": f"Error loading menu: {str(e)}"}), 500
 
@@ -282,19 +299,17 @@ def login():
 def submit_order():
     data = request.json
     orders = load_data(ORDERS_DB)
-    menu = load_data(MENU_DB)
     
+    # Updated Stock logic for MongoDB
     for cart_item in data.get('items', []):
-        for menu_item in menu:
-            if str(menu_item.get('id')) == str(cart_item.get('id')):
-                current_stock = int(menu_item.get('quantity', 0))
-                order_qty = int(cart_item.get('quantity', 1))
-                if current_stock < order_qty:
-                    return jsonify({"message": f"Sorry, {menu_item.get('name')} just sold out!"}), 400
-                menu_item['quantity'] = current_stock - order_qty
+        db_item = menu_collection.find_one({'_id': ObjectId(cart_item.get('id'))})
+        if db_item:
+            current_stock = int(db_item.get('quantity', 0))
+            order_qty = int(cart_item.get('quantity', 1))
+            if current_stock < order_qty:
+                return jsonify({"message": f"Sorry, {db_item.get('name')} just sold out!"}), 400
+            menu_collection.update_one({'_id': db_item['_id']}, {'$set': {'quantity': current_stock - order_qty}})
 
-    save_data(MENU_DB, menu)
-    
     now = datetime.now()
     all_combined = orders + load_data(SPECIAL_ORDERS_DB)
     today_str = now.strftime('%Y-%m-%d')
@@ -394,38 +409,47 @@ def admin_login():
 
 @app.route('/update_menu_item', methods=['POST'])
 def update_menu_item():
-    data = request.json 
-    menu = load_data(MENU_DB)
-    for item in menu:
-        if str(item.get('id')) == str(data.get('id')):
-            item.update(data)
-            break
-    save_data(MENU_DB, menu)
-    return jsonify({"status": "success", "message": "Menu updated!"}), 200
+    try:
+        data = request.json
+        item_id = data.get('id')
+        if item_id:
+            update_fields = {k: v for k, v in data.items() if k != 'id'}
+            # Ensure number types
+            if 'price' in update_fields: update_fields['price'] = int(update_fields['price'])
+            if 'quantity' in update_fields: update_fields['quantity'] = int(update_fields['quantity'])
+            
+            menu_collection.update_one({'_id': ObjectId(item_id)}, {'$set': update_fields})
+            return jsonify({"status": "success", "message": "Menu updated!"}), 200
+        return jsonify({"error": "No ID provided"}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/add_menu_item', methods=['POST'])
 def add_menu_item():
-    data = request.json
-    menu = load_data(MENU_DB)
-    data['id'] = str(len(menu) + 1)
-    if 'image' not in data: data['image'] = ""
-    if 'quantity' not in data: data['quantity'] = 0
-    if 'category' not in data: data['category'] = "Main"
-    menu.append(data)
-    save_data(MENU_DB, menu)
-    return jsonify({"status": "success", "id": data['id']}), 201
+    try:
+        data = request.json
+        if 'image' not in data: data['image'] = ""
+        if 'quantity' not in data: data['quantity'] = 0
+        if 'category' not in data: data['category'] = "Main"
+        
+        # Numbers check
+        data['quantity'] = int(data['quantity'])
+        data['price'] = int(data['price'])
+        
+        result = menu_collection.insert_one(data)
+        return jsonify({"status": "success", "id": str(result.inserted_id)}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-# --- NEW: DELETE MENU ITEM ROUTE ---
 @app.route('/delete_menu_item/<item_id>', methods=['DELETE'])
 def delete_menu_item(item_id):
-    menu = load_data(MENU_DB)
-    # Filter out the item with the matching ID
-    new_menu = [item for item in menu if str(item.get('id')) != str(item_id)]
-    
-    if len(new_menu) < len(menu):
-        save_data(MENU_DB, new_menu)
-        return jsonify({"success": True}), 200
-    return jsonify({"error": "Item not found"}), 404
+    try:
+        result = menu_collection.delete_one({'_id': ObjectId(item_id)})
+        if result.deleted_count > 0:
+            return jsonify({"success": True}), 200
+        return jsonify({"error": "Item not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/get_all_orders', methods=['GET'])
 def get_all_orders():
@@ -435,12 +459,12 @@ def get_all_orders():
 def confirm_order():
     data = request.json
     order_id, new_status = data.get('order_id'), data.get('status', 'SUCCESSFUL')
-    for db in [ORDERS_DB, SPECIAL_ORDERS_DB, COMPLAINTS_DB]:
-        items = load_data(db)
+    for db_path in [ORDERS_DB, SPECIAL_ORDERS_DB, COMPLAINTS_DB]:
+        items = load_data(db_path)
         for i in items:
             if i.get('order_id') == order_id:
                 i['status'] = new_status
-                save_data(db, items)
+                save_data(db_path, items)
                 return jsonify({"status": "success"}), 200
     return jsonify({"status": "error"}), 404
 
