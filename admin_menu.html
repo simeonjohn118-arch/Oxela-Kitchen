@@ -60,6 +60,7 @@
         .stock-input { font-weight: bold; color: var(--pro-purple); border: 1px solid #dcd0ff; }
         
         .save-btn { background: var(--oxela-orange); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.8rem; }
+        .del-btn { background: var(--danger); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.8rem; margin-left: 5px; }
 
         #toast {
             visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center;
@@ -84,7 +85,7 @@
     <div class="dashboard-grid">
         <div class="pro-card inflation-card">
             <strong style="color: var(--danger)">📈 Inflation / Combo Price Manager</strong>
-            <p style="font-size: 0.75rem; color: #777; margin: 5px 0;">Add combo items (sides) here to update their prices across the entire menu instantly.</p>
+            <p style="font-size: 0.75rem; color: #777; margin: 5px 0;">Update prices across the menu based on ingredients (e.g., all Chicken items).</p>
             
             <div id="combo-list" class="dash-row">
                 <div class="combo-tag">Chicken: ₦<input type="number" class="inflation-val" data-match="Chicken" value="1200"></div>
@@ -130,7 +131,7 @@
         <div class="form-group">
             <label>Category</label>
            <select id="newCategory">
-                     <option value="Main Dish">Main Dish</option>
+                  <option value="Main Dish">Main Dish</option>
                   <option value="Swallow">Swallow</option> <option value="Side/Protein">Side/Protein</option>
                   <option value="Snacks">Snacks</option>
                 <option value="Drinks">Drinks</option>
@@ -170,7 +171,7 @@
                     <th>Promo Price</th>
                     <th style="width: 15%;">Change Image</th>
                     <th>Status</th>
-                    <th>Action</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody id="menuTableBody"></tbody>
@@ -196,43 +197,53 @@
         });
     }
 
-    async function loadMenu() {
+   async function loadMenu() {
         try {
             const res = await fetch(`${API_URL}/get_menu`);
             const menu = await res.json();
             const tbody = document.getElementById('menuTableBody');
             tbody.innerHTML = '';
+            
             menu.forEach(item => {
                 const displayImg = item.image || 'https://via.placeholder.com/50';
-                tbody.innerHTML += `
-                    <tr>
-                        <td><img src="${displayImg}" class="img-preview" id="prev-${item.id}" onerror="this.src='https://via.placeholder.com/50'"></td>
-                        <td><input type="text" id="n-${item.id}" class="table-input" value="${item.name}"></td>
-                        <td>
-                           <select id="c-${item.id}" class="table-input">
-                                <option value="Main Dish" ${item.category === 'Main Dish' ? 'selected' : ''}>Main Dish</option>
-                                <option value="Swallow" ${item.category === 'Swallow' ? 'selected' : ''}>Swallow</option> <option value="Side/Protein" ${item.category === 'Side/Protein' ? 'selected' : ''}>Side/Protein</option>
-                                <option value="Snacks" ${item.category === 'Snacks' ? 'selected' : ''}>Snacks</option>
-                                <option value="Drinks" ${item.category === 'Drinks' ? 'selected' : ''}>Drinks</option>
-                            </select>
-                        </td>
-                        <td><input type="number" id="p-${item.id}" class="table-input" value="${item.price}"></td>
-                        <td><input type="number" id="q-${item.id}" class="table-input stock-input" value="${item.quantity || 0}"></td>
-                        <td><input type="number" id="pr-${item.id}" class="table-input" style="color:var(--oxela-dark)" value="${item.promo_price || 0}"></td>
-                        <td><input type="file" id="file-${item.id}" class="table-input" accept="image/*"></td>
-                        <td>
-                            <select id="s-${item.id}" class="table-input">
-                                <option value="Available" ${item.status === 'Available' ? 'selected' : ''}>Available</option>
-                                <option value="Sold Out" ${item.status === 'Sold Out' ? 'selected' : ''}>Sold Out</option>
-                            </select>
-                        </td>
-                        <td><button class="save-btn" onclick="updateItem('${item.id}', '${item.image || ''}')">UPDATE</button></td>
-                    </tr>
+                
+                // Create the row
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td><img src="${displayImg}" class="img-preview" id="prev-${item.id}" onerror="this.src='https://via.placeholder.com/50'"></td>
+                    <td><input type="text" id="n-${item.id}" class="table-input" value="${item.name}"></td>
+                    <td>
+                       <select id="c-${item.id}" class="table-input">
+                            <option value="Main Dish" ${item.category === 'Main Dish' ? 'selected' : ''}>Main Dish</option>
+                            <option value="Swallow" ${item.category === 'Swallow' ? 'selected' : ''}>Swallow</option> 
+                            <option value="Side/Protein" ${item.category === 'Side/Protein' ? 'selected' : ''}>Side/Protein</option>
+                            <option value="Snacks" ${item.category === 'Snacks' ? 'selected' : ''}>Snacks</option>
+                            <option value="Drinks" ${item.category === 'Drinks' ? 'selected' : ''}>Drinks</option>
+                        </select>
+                    </td>
+                    <td><input type="number" id="p-${item.id}" class="table-input" value="${item.price}"></td>
+                    <td><input type="number" id="q-${item.id}" class="table-input stock-input" value="${item.quantity || 0}"></td>
+                    <td><input type="number" id="pr-${item.id}" class="table-input" style="color:var(--oxela-dark)" value="${item.promo_price || 0}"></td>
+                    <td><input type="file" id="file-${item.id}" class="table-input" accept="image/*"></td>
+                    <td>
+                        <select id="s-${item.id}" class="table-input">
+                            <option value="Available" ${item.status === 'Available' ? 'selected' : ''}>Available</option>
+                            <option value="Sold Out" ${item.status === 'Sold Out' ? 'selected' : ''}>Sold Out</option>
+                        </select>
+                    </td>
+                    <td>
+                        <button class="save-btn" onclick="updateItem('${item.id}', '${item.image || ''}')">SAVE</button>
+                        <button class="del-btn" onclick="deleteItem('${item.id}')">REMOVE</button>
+                    </td>
                 `;
+                tbody.appendChild(row);
             });
-        } catch (err) { showToast("Connection Failed", "#e74c3c"); }
+        } catch (err) { 
+            console.error(err);
+            showToast("Connection Failed", "#e74c3c"); 
+        }
     }
-
     function addNewComboRow() {
         const name = document.getElementById('customComboName').value;
         const price = document.getElementById('customComboPrice').value;
@@ -248,48 +259,30 @@
         document.getElementById('customComboPrice').value = '';
     }
 
-   async function applyInflation() {
-    // 1. Get values from your inflation input fields
-    const updates = {
-        "Chicken": document.getElementById('inf-chicken').value,
-        "Meat": document.getElementById('inf-meat').value,
-        "Egg": document.getElementById('inf-egg').value,
-        "Fish": document.getElementById('inf-fish').value
-    };
+    async function applyInflation() {
+        const inputs = document.querySelectorAll('.inflation-val');
+        const res = await fetch(`${API_URL}/get_menu`);
+        const menu = await res.json();
+        let updateCount = 0;
 
-    // 2. Filter out empty inputs (only update what you changed)
-    const activeUpdates = Object.entries(updates).filter(([_, val]) => val !== "");
+        for(let input of inputs) {
+            const keyword = input.getAttribute('data-match').toLowerCase();
+            const newPrice = parseInt(input.value);
 
-    if (activeUpdates.length === 0) {
-        alert("Please enter at least one new price.");
-        return;
-    }
-
-    try {
-        // 3. Loop through the entire menu
-        for (let item of fullMenu) {
-            for (let [keyword, newPrice] of activeUpdates) {
-                // If the item name contains the keyword (e.g., "Jollof & Chicken")
-                if (item.name.toLowerCase().includes(keyword.toLowerCase())) {
-                    
-                    // 4. Send the update to your Python Flask backend
-                    await fetch('/update_menu_item', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            id: item.id,
-                            price: Number(newPrice)
-                        })
+            for(let item of menu) {
+                if(item.name.toLowerCase().includes(keyword)) {
+                    item.price = newPrice;
+                    await fetch(`${API_URL}/update_menu_item`, {
+                        method: 'POST', headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(item)
                     });
+                    updateCount++;
                 }
             }
         }
-        alert("Inflation prices applied to all matching items! 🚀");
-        location.reload(); // Refresh to show new prices
-    } catch (err) {
-        console.error("Inflation update failed:", err);
+        showToast(`Updated ${updateCount} items!`, "#27ae60");
+        loadMenu();
     }
-}
 
     async function applyGlobalPromo() {
         const discount = parseInt(document.getElementById('globalDiscount').value);
@@ -373,26 +366,26 @@
         } catch (err) { showToast("Update Failed", "#e74c3c"); }
     }
 
-    loadMenu();
     async function deleteItem(id) {
-    if (!confirm("Are you sure you want to remove this item?")) return;
+        if (!confirm("Are you sure you want to remove this item permanently?")) return;
 
-    try {
-        const response = await fetch(`/delete_menu_item/${id}`, {
-            method: 'DELETE'
-        });
+        try {
+            const res = await fetch(`${API_URL}/delete_menu_item/${id}`, {
+                method: 'DELETE'
+            });
 
-        if (response.ok) {
-            alert("Item removed successfully!");
-            // Refresh the table
-            fetchMenu(); 
-        } else {
-            alert("Failed to delete item.");
+            if (res.ok) {
+                showToast("Item Removed!", "#e74c3c");
+                loadMenu(); 
+            } else {
+                showToast("Failed to delete", "#e74c3c");
+            }
+        } catch (err) {
+            showToast("Server Error", "#e74c3c");
         }
-    } catch (err) {
-        console.error("Delete error:", err);
     }
-}
+
+    loadMenu();
 </script>
 </body>
 </html>
