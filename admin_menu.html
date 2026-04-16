@@ -70,6 +70,17 @@
         #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
         @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
         @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
+        .del-btn { 
+    background: transparent; 
+    color: var(--danger); 
+    border: none; 
+    font-weight: bold; 
+    font-size: 18px; 
+    cursor: pointer; 
+    transition: 0.2s;
+}
+.del-btn:hover { transform: scale(1.2); }
     </style>
 </head>
 <body>
@@ -207,8 +218,9 @@
             menu.forEach(item => {
                 const displayImg = item.image || 'https://via.placeholder.com/50';
                 
-                // Create the row
+                // We give the row an ID so we can remove it instantly from the UI
                 const row = document.createElement('tr');
+                row.id = `row-${item.id}`; 
                 
                 row.innerHTML = `
                     <td><img src="${displayImg}" class="img-preview" id="prev-${item.id}" onerror="this.src='https://via.placeholder.com/50'"></td>
@@ -233,18 +245,42 @@
                         </select>
                     </td>
                     <td>
-                        <button class="save-btn" onclick="updateItem('${item.id}', '${item.image || ''}')">SAVE</button>
-                        <button class="del-btn" onclick="deleteItem('${item.id}')">REMOVE</button>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <button class="save-btn" onclick="updateItem('${item.id}', '${item.image || ''}')">UPDATE</button>
+                            <button class="del-btn" style="background:none; color:var(--danger); font-size:1.2rem; border:none; cursor:pointer; padding:0 5px;" onclick="deleteItem('${item.id}')">✖</button>
+                        </div>
                     </td>
                 `;
                 tbody.appendChild(row);
             });
         } catch (err) { 
-            console.error(err);
             showToast("Connection Failed", "#e74c3c"); 
         }
     }
-    function addNewComboRow() {
+
+    async function deleteItem(id) {
+        // 1. Immediate UI Feedback (Remove from screen now)
+        const row = document.getElementById(`row-${id}`);
+        if (row) row.style.display = 'none';
+
+        try {
+            // 2. Silent background delete
+            const res = await fetch(`${API_URL}/delete_menu_item/${id}`, {
+                method: 'DELETE'
+            });
+
+            if (res.ok) {
+                showToast("Item removed", "#e74c3c");
+            } else {
+                // If the server fails, bring the row back so the user knows
+                if (row) row.style.display = 'table-row';
+                showToast("Delete failed on server", "#e74c3c");
+            }
+        } catch (err) {
+            if (row) row.style.display = 'table-row';
+            showToast("Network Error", "#e74c3c");
+        }
+    }    function addNewComboRow() {
         const name = document.getElementById('customComboName').value;
         const price = document.getElementById('customComboPrice').value;
         if(!name || !price) return showToast("Name and Price required", "#e67e22");
