@@ -527,6 +527,19 @@ def serve_any_file(path):
 def logout_redirect():
     return root()
 
+# To Save
+def save_data():
+    with open('menu.json', 'w') as f:
+        json.dump(fullMenu, f)
+
+# To Load (at the start of your app)
+try:
+    with open('menu.json', 'r') as f:
+        fullMenu = json.load(f)
+except:
+    fullMenu = []
+    
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     print(f"O'XELA KITCHEN PRO STARTING ON PORT {port}...")

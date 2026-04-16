@@ -248,30 +248,48 @@
         document.getElementById('customComboPrice').value = '';
     }
 
-    async function applyInflation() {
-        const comboInputs = document.querySelectorAll('.inflation-val');
-        const res = await fetch(`${API_URL}/get_menu`);
-        const menu = await res.json();
-        let updateCount = 0;
+   async function applyInflation() {
+    // 1. Get values from your inflation input fields
+    const updates = {
+        "Chicken": document.getElementById('inf-chicken').value,
+        "Meat": document.getElementById('inf-meat').value,
+        "Egg": document.getElementById('inf-egg').value,
+        "Fish": document.getElementById('inf-fish').value
+    };
 
-        for(let input of comboInputs) {
-            const matchWord = input.getAttribute('data-match').toLowerCase();
-            const newPrice = parseInt(input.value);
+    // 2. Filter out empty inputs (only update what you changed)
+    const activeUpdates = Object.entries(updates).filter(([_, val]) => val !== "");
 
-            for(let item of menu) {
-                if(item.name.toLowerCase().includes(matchWord)) {
-                    item.price = newPrice;
-                    await fetch(`${API_URL}/update_menu_item`, {
-                        method: 'POST', headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify(item)
+    if (activeUpdates.length === 0) {
+        alert("Please enter at least one new price.");
+        return;
+    }
+
+    try {
+        // 3. Loop through the entire menu
+        for (let item of fullMenu) {
+            for (let [keyword, newPrice] of activeUpdates) {
+                // If the item name contains the keyword (e.g., "Jollof & Chicken")
+                if (item.name.toLowerCase().includes(keyword.toLowerCase())) {
+                    
+                    // 4. Send the update to your Python Flask backend
+                    await fetch('/update_menu_item', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            id: item.id,
+                            price: Number(newPrice)
+                        })
                     });
-                    updateCount++;
                 }
             }
         }
-        showToast(`Updated ${updateCount} items!`, "#e74c3c");
-        loadMenu();
+        alert("Inflation prices applied to all matching items! 🚀");
+        location.reload(); // Refresh to show new prices
+    } catch (err) {
+        console.error("Inflation update failed:", err);
     }
+}
 
     async function applyGlobalPromo() {
         const discount = parseInt(document.getElementById('globalDiscount').value);
@@ -356,6 +374,25 @@
     }
 
     loadMenu();
+    async function deleteItem(id) {
+    if (!confirm("Are you sure you want to remove this item?")) return;
+
+    try {
+        const response = await fetch(`/delete_menu_item/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            alert("Item removed successfully!");
+            // Refresh the table
+            fetchMenu(); 
+        } else {
+            alert("Failed to delete item.");
+        }
+    } catch (err) {
+        console.error("Delete error:", err);
+    }
+}
 </script>
 </body>
 </html>
