@@ -612,15 +612,23 @@ def login_page():
     # This makes index.html (your login) the very first page
     return render_template('customer/index.html')
 
+import os
+from flask import Flask, render_template # ensure these are imported
+
 @app.route('/home')
 def customer_home():
-    # This is the page they see AFTER they log in
+    # Construct the path to check if the file exists
+    template_path = os.path.join('templates', 'customer', 'home.html')
+    if not os.path.exists(template_path):
+        return f"ERROR: File not found at {template_path}. Check your folder names!", 404
     return render_template('customer/home.html')
 
 @app.route('/admin_hub')
 def admin_hub_view():
-    # This tells Flask to look in templates/master/admin_hub.html
-    return render_template('master/index.html.html')
+    template_path = os.path.join('templates', 'master', 'admin_hub.html')
+    if not os.path.exists(template_path):
+        return f"ERROR: File not found at {template_path}. Check your folder names!", 404
+    return render_template('master/admin_hub.html')
 
 # Master App updates settings (with image upload)
 @app.route('/update_festive', methods=['POST'])
