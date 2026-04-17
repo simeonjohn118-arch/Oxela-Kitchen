@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Portal | O'Xela Kitchen</title>
+    <img src="/static/image/Kitchen.jpeg.png" ...>
     
     <link rel="manifest" href="/static/manifest.json">
     <button id="installBtn" style="display:none; background: #e67e22; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
@@ -104,7 +105,7 @@
             if (res.ok) {
                 localStorage.setItem('admin_name', data.name);
                 showToast("Access Granted! Loading Hub...", "#27ae60");
-                setTimeout(() => { window.location.href = 'admin_hub.html'; }, 1500);
+                setTimeout(() => { window.location.href = 'admin_hub'; }, 1500);
             } else {
                 showToast(data.error || "Invalid Credentials", "#e74c3c");
             }

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en-UK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Special Orders | O'xela Kitchen</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root { 
+            --brand-red: #e67e22; 
+            --brand-green: #27ae60; 
+            --brand-gold: #d4af37; 
+            --bg-cream: #fdfaf7;
+            --nav-white: #ffffff;
+        }
+
+        body { 
+            background-color: var(--bg-cream); 
+            margin: 0; 
+            padding-bottom: 80px;
+            padding-top: 70px;
+            font-family: 'Poppins', sans-serif; 
+            color: #333; 
+            overflow-x: hidden;
+        }
+
+        /* --- NAVIGATION --- */
+        .top-nav {
+            position: fixed;
+            top: 0; width: 100%; height: 65px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-sizing: border-box;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            z-index: 1000;
+        }
+
+        .back-btn { font-size: 1.2rem; color: var(--brand-red); cursor: pointer; padding: 10px; }
+        .page-title { font-family: 'Playfair Display', serif; font-weight: 900; font-size: 1.1rem; color: var(--brand-red); }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; width: 100%; height: 70px;
+            background: var(--nav-white);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid #eee;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.03);
+            z-index: 1000;
+        }
+
+        .nav-item { text-align: center; color: #999; text-decoration: none; font-size: 0.7rem; flex: 1; }
+        .nav-item i { font-size: 1.3rem; margin-bottom: 4px; display: block; }
+        .nav-item.active { color: var(--brand-red); font-weight: 600; }
+
+        /* --- COMPONENTS --- */
+        .container { max-width: 600px; margin: auto; padding: 15px; }
+
+        .auth-card { 
+            background: white; padding: 25px; border-radius: 20px; 
+            box-shadow: 0 5px 20px rgba(0,0,0,0.02); margin-bottom: 25px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .input-group { margin-bottom: 15px; }
+        .input-group label { font-size: 0.7rem; font-weight: 700; color: #aaa; text-transform: uppercase; margin-bottom: 5px; display: block; }
+        
+        input, textarea { 
+            width: 100%; padding: 14px; border: 1.5px solid #f5f5f5; 
+            border-radius: 12px; font-family: inherit; box-sizing: border-box; background: #fafafa;
+        }
+
+        .btn-primary { 
+            background: var(--brand-red); color: white; border: none; 
+            padding: 18px; width: 100%; border-radius: 15px; 
+            font-weight: 700; cursor: pointer; transition: 0.3s;
+        }
+
+        /* --- CHAT STYLES --- */
+        #chatInterface { display: none; flex-direction: column; height: 500px; background: white; border-radius: 20px; overflow: hidden; border: 1px solid #eee; }
+        #chatHeader { background: var(--brand-red); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        #chatMessages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background: #fdfaf7; }
+        
+        .msg { max-width: 80%; padding: 12px 16px; border-radius: 15px; font-size: 0.85rem; line-height: 1.4; }
+        .msg.user { align-self: flex-end; background: var(--brand-red); color: white; border-bottom-right-radius: 2px; }
+        .msg.admin { align-self: flex-start; background: #eee; color: #333; border-bottom-left-radius: 2px; }
+
+        .chat-input-area { display: flex; padding: 10px; gap: 10px; border-top: 1px solid #eee; background: white; }
+        .chat-input-area input { flex: 1; margin: 0; }
+        .send-btn { background: var(--brand-red); color: white; border: none; width: 45px; border-radius: 10px; cursor: pointer; }
+
+        /* --- HISTORY --- */
+        .order-card { background: white; padding: 20px; border-radius: 18px; margin-bottom: 15px; border-left: 6px solid #ddd; position: relative; }
+        .status-badge { padding: 4px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 800; float: right; text-transform: uppercase; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-approved { background: #d4edda; color: #155724; }
+        
+        .chat-link { color: var(--brand-red); font-size: 0.75rem; font-weight: 700; cursor: pointer; text-decoration: underline; margin-top: 10px; display: inline-block; }
+
+        #customAlert { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 10px 20px; border-radius: 30px; z-index: 10000; display: none; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+
+<div class="top-nav">
+    <div class="orders.html" onclick="handleBack()"><i class="fas fa-arrow-left"></i></div>
+    <div class="page-title" id="navTitle">Special Orders</div>
+    <div style="width: 40px;"></div>
+</div>
+
+<div class="container">
+    <div id="formSection" class="auth-card">
+        <h3 style="margin-top:0;">New Custom Request</h3>
+        <form id="specialOrderForm">
+            <div class="input-group">
+                <label>Details of Order</label>
+                <textarea id="description" placeholder="E.g. 50 Packs of Jollof Rice for a birthday party..." required style="height: 80px;"></textarea>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <div class="input-group" style="flex: 1;">
+                    <label>Budget (₦)</label>
+                    <input type="number" id="budget" placeholder="Amount" required>
+                </div>
+                <div class="input-group" style="flex: 1;">
+                    <label>Delivery Date</label>
+                    <input type="date" id="delivery_date" required>
+                </div>
+            </div>
+            <button type="submit" class="btn-primary" id="submitBtn">Send & Start Chat</button>
+        </form>
+    </div>
+
+    <div id="chatInterface">
+        <div id="chatHeader">
+            <div class="special.html" onclick="handleBack()"><i class="fas fa-arrow-left"></i></div>
+            <span><i class="fas fa-user-tie"></i> O'xela Kitchen Admin</span>
+            <small id="activeOrderId">#SP-000</small>
+        </div>
+        <div id="chatMessages"></div>
+        <div class="chat-input-area">
+            <input type="text" id="chatInput" placeholder="Type message...">
+            <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <div id="historyHeader" class="section-header" style="margin-top: 20px;">
+        <h4 style="margin:0;">Recent Requests</h4>
+        <i class="fas fa-sync-alt" style="color:var(--brand-red); cursor:pointer;" onclick="loadHistory()"></i>
+    </div>
+    <div id="historyList"></div>
+</div>
+
+<div class="bottom-nav">
+    <a href="home.html" class="nav-item"><i class="fas fa-utensils"></i><span>Menu</span></a>
+    <a href="orders.html" class="nav-item"><i class="fas fa-receipt"></i><span>Orders</span></a>
+    <a href="special_orders.html" class="nav-item active"><i class="fas fa-star"></i><span>Special</span></a>
+    <a href="profile.html" class="nav-item"><i class="fas fa-user"></i><span>Profile</span></a>
+</div>
+
+<div id="customAlert"></div>
+
+<script>
+ const API_URL = window.location.origin;
+    let currentChatOrder = null;
+
+    function showToast(msg) {
+        const toast = document.getElementById('customAlert');
+        toast.innerText = msg;
+        toast.style.display = 'block';
+        setTimeout(() => toast.style.display = 'none', 3000);
+    }
+
+    // HANDLE BACK BUTTON
+    function handleBack() {
+        if(document.getElementById('chatInterface').style.display === 'flex') {
+            closeChat();
+        } else {
+            window.location.href='home.html';
+        }
+    }
+
+    // SUBMIT FORM AND JUMP TO CHAT
+    document.getElementById('specialOrderForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const user = JSON.parse(localStorage.getItem('oxela_user'));
+        if(!user) return showToast("Please login!");
+
+        const desc = document.getElementById('description').value;
+        const budg = document.getElementById('budget').value;
+        const date = document.getElementById('delivery_date').value;
+
+        const initialMsg = `🚀 NEW REQUEST:\n- ${desc}\n- Budget: ₦${budg}\n- Date: ${date}`;
+
+        const data = {
+            user_email: user.email,
+            customer_name: user.name,
+            customer_phone: user.phone,
+            description: desc,
+            budget: budg,
+            delivery_date: date,
+            status: "PENDING",
+            admin_reply: "Hello! We have received your custom request. Give us a moment to review the price and details."
+        };
+
+        try {
+            const res = await fetch(`${API_URL}/submit_special_order`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if(res.ok) {
+                document.getElementById('specialOrderForm').reset();
+                openChat(result.order_id, initialMsg, data.admin_reply);
+            }
+        } catch(err) { showToast("Server Error"); }
+    };
+
+    function openChat(orderId, userMsg, adminReply) {
+        currentChatOrder = orderId;
+        document.getElementById('formSection').style.display = 'none';
+        document.getElementById('historyHeader').style.display = 'none';
+        document.getElementById('historyList').style.display = 'none';
+        document.getElementById('chatInterface').style.display = 'flex';
+        document.getElementById('activeOrderId').innerText = "#" + orderId;
+        document.getElementById('navTitle').innerText = "Negotiation";
+
+        const box = document.getElementById('chatMessages');
+        box.innerHTML = `
+            <div class="msg user">${userMsg.replace(/\n/g, '<br>')}</div>
+            <div class="msg admin">${adminReply}</div>
+        `;
+        box.scrollTop = box.scrollHeight;
+    }
+
+    function closeChat() {
+        document.getElementById('chatInterface').style.display = 'none';
+        document.getElementById('formSection').style.display = 'block';
+        document.getElementById('historyHeader').style.display = 'flex';
+        document.getElementById('historyList').style.display = 'block';
+        document.getElementById('navTitle').innerText = "Special Orders";
+        loadHistory();
+    }
+
+    function sendMessage() {
+        const input = document.getElementById('chatInput');
+        if(!input.value) return;
+        
+        const box = document.getElementById('chatMessages');
+        box.innerHTML += `<div class="msg user">${input.value}</div>`;
+        input.value = "";
+        box.scrollTop = box.scrollHeight;
+        
+        // This is where you'd update your database with the new message
+        showToast("Message sent to Admin");
+    }
+
+    async function loadHistory() {
+        const user = JSON.parse(localStorage.getItem('oxela_user'));
+        if(!user) return;
+        try {
+            const res = await fetch(`${API_URL}/user_orders/${user.email}`);
+            const data = await res.json();
+            const specials = data.filter(o => o.order_id && o.order_id.startsWith('SP-'));
+            const list = document.getElementById('historyList');
+            
+            if(specials.length === 0) {
+                list.innerHTML = `<p style="text-align:center; color:#999;">No previous requests.</p>`;
+                return;
+            }
+
+            list.innerHTML = specials.reverse().map(o => `
+                <div class="order-card" style="border-left-color: ${getStatusColor(o.status)}">
+                    <span class="status-badge status-${o.status.toLowerCase()}">${o.status}</span>
+                    <small>#${o.order_id}</small>
+                    <p style="margin:8px 0; font-size:0.8rem;">${o.description.substring(0,60)}...</p>
+                    <span class="chat-link" onclick="openChat('${o.order_id}', 'My previous request: ${o.description}', '${o.admin_reply || 'Reviewing...'}')">
+                        <i class="fas fa-comments"></i> Open Chat
+                    </span>
+                </div>
+            `).join('');
+        } catch(e) {}
+    }
+
+    function getStatusColor(s) {
+        if(s === 'APPROVED') return '#27ae60';
+        if(s === 'PENDING') return '#d4af37';
+        return '#eee';
+    }
+
+    window.onload = loadHistory;
+</script>
+</body>
+</html>

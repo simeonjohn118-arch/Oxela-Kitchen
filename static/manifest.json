@@ -9,7 +9,7 @@
     "theme_color": "#e67e22",
     "icons": [
         {
-            "src": "/favicon.ico",
+            "src": "/static/icons/favicon.ico",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any maskable"
@@ -17,7 +17,7 @@
     ],
     "screenshots": [
         {
-            "src": "/static/Kitchen.jpeg",
+            "src": "/static/customer/Kitchen.jpeg",
             "sizes": "1280x720",
             "type": "image/jpeg",
             "form_factor": "wide"

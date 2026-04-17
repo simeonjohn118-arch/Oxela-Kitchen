@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O'XELA KITCHEN | FAQ</title><link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="manifest" href="/manifest.json">
+
+    <style>
+        :root {
+            --oxela-orange: #e67e22;
+            --oxela-dark: #d35400;
+            --bg-light: #fcfcfc;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: var(--oxela-orange);
+            font-size: 1.2rem;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+
+        .header h1 {
+            font-size: 1.2rem;
+            color: var(--oxela-dark);
+        }
+
+        /* Content Container */
+        .container {
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .intro {
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .intro p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* FAQ Accordion */
+        .faq-item {
+            background: white;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.03);
+            border: 1px solid #eee;
+        }
+
+        .faq-question {
+            padding: 15px 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: none;
+            border: none;
+            text-align: left;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #333;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .faq-question:hover {
+            background: #fff9f4;
+        }
+
+        .faq-answer {
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: white;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        .faq-item.active .faq-answer {
+            padding: 0 20px 15px 20px;
+            max-height: 200px; /* Adjust as needed */
+        }
+
+        .faq-item.active .faq-question {
+            color: var(--oxela-orange);
+        }
+
+        .arrow {
+            transition: transform 0.3s;
+            color: var(--oxela-orange);
+        }
+
+        .faq-item.active .arrow {
+            transform: rotate(180deg);
+        }
+
+        /* Contact Section */
+        .contact-box {
+            margin-top: 40px;
+            background: #fff3e0;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px dashed var(--oxela-orange);
+        }
+
+        .contact-box h3 {
+            font-size: 1rem;
+            margin-bottom: 10px;
+            color: var(--oxela-dark);
+        }
+
+        .gmail-link {
+            display: inline-block;
+            background: var(--oxela-orange);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+
+        .gmail-link:hover {
+            background: var(--oxela-dark);
+            transform: translateY(-2px);
+        }
+        /* Custom Professional Notification (Toast) */
+#customAlert {
+    position: fixed;
+    bottom: -100px; /* Hidden off-screen initially */
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a1a;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    z-index: 10000;
+    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 300px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* When this class is added via JS, it slides up */
+#customAlert.show {
+    bottom: 40px;
+}
+
+.alert-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ff6b6b; /* Default Accent */
+}
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <a href="home.html" class="back-btn">←</a>
+        <h1>Frequently Asked Questions</h1>
+    </header>
+
+    <main class="container">
+        <div class="intro">
+            <p>How can we help you today at O'xela Kitchen?</p>
+        </div>
+
+        <div class="faq-list">
+            
+            <div class="faq-item">
+                <button class="faq-question">
+                    How do I place an order? <span class="arrow">▼</span>
+                </button>
+                <div class="faq-answer">
+                    Simply navigate to the "Dishes" or "Snacks" section on the Home page, click your favorite item, and it will be added to your cart for checkout.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    What are your opening hours? <span class="arrow">▼</span>
+                </button>
+                <div class="faq-answer">
+                    O'xela Kitchen is open from 8:00 AM to 10:00 PM, Monday to Saturday. Sunday hours are 12:00 PM to 8:00 PM.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    Do you offer home delivery? <span class="arrow">▼</span>
+                </button>
+                <div class="faq-answer">
+                    Yes! We offer doorstep delivery within the local area. Delivery fees are calculated based on your distance from the kitchen.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    Can I track my order status? <span class="arrow">▼</span>
+                </button>
+                <div class="faq-answer">
+                    Absolutely. Once your order is confirmed, you can check the "Orders" page in the footer to see if your meal is being prepared or out for delivery.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    How do I pay for my food? <span class="arrow">▼</span>
+                </button>
+                <div class="faq-answer">
+                    We currently support "Pay on Delivery" and Direct Bank Transfers. Online card payment features are coming soon!
+                </div>
+            </div>
+
+        </div>
+
+        <div class="contact-box">
+            <h3>Still have questions?</h3>
+            <p>If you couldn't find what you were looking for, please send us a direct message.</p>
+            <a href="mailto:simeonjohn118@gmail.com?subject=Inquiry from O'xela App" class="gmail-link">
+                📧 Email Us on Gmail
+            </a>
+        </div>
+    </main>
+<div id="customAlert">
+    <div class="alert-dot" id="alertDot"></div>
+    <span id="alertMessage">Notification Message</span>
+</div>
+    <script>
+        // Logic to open/close the accordion items
+        const faqItems = document.querySelectorAll('.faq-item');
+
+        faqItems.forEach(item => {
+            const question = item.querySelector('.faq-question');
+            question.addEventListener('click', () => {
+                // Close other open items (Optional: remove this if you want multiple open)
+                faqItems.forEach(otherItem => {
+                    if (otherItem !== item) {
+                        otherItem.classList.remove('active');
+                    }
+                });
+                
+                // Toggle current item
+                item.classList.toggle('active');
+            });
+        });
+        function showToast(message, type = "success") {
+    const alertBox = document.getElementById('customAlert');
+    const alertText = document.getElementById('alertMessage');
+    const alertDot = document.getElementById('alertDot');
+
+    alertText.innerText = message;
+    
+    // Change dot color based on type
+    if (type === "error") {
+        alertDot.style.background = "#ff4757"; // Red for errors
+    } else {
+        alertDot.style.background = "#2ed573"; // Green for success
+    }
+
+    // Show the notification
+    alertBox.classList.add('show');
+
+    // Hide it automatically after 3 seconds
+    setTimeout(() => {
+        alertBox.classList.remove('show');
+    }, 3000);
+}
+    </script>
+</body>
+</html>

@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O'XELA KITCHEN | Home</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+navigator.serviceWorker.register('/static/sw.js')
+    <style>
+        /* --- CSS STYLES --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #fcfcfc;
+            padding-bottom: 80px; 
+            color: #333;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: #ffffff;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: #d35400;
+        }
+
+        .cart-icon {
+            font-size: 1.2rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        /* Dropdown Menu Styling */
+        .dropdown {
+            display: none;
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            width: 180px;
+            z-index: 2000;
+            border: 1px solid #eee;
+        }
+        .dropdown a {
+            display: block;
+            padding: 12px 15px;
+            text-decoration: none;
+            color: #333;
+            font-size: 0.9rem;
+            border-bottom: 1px solid #f9f9f9;
+        }
+        .dropdown a:last-child { border-bottom: none; }
+        .show { display: block; }
+
+        /* Hero Banner */
+        .hero { padding: 15px; }
+        .hero-card {
+            /* Default background - will be overridden by JS if festive is active */
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), 
+                        url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=500&q=60');
+            background-size: cover;
+            background-position: center;
+            height: 160px;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 20px;
+            color: white;
+            transition: all 0.5s ease;
+            border: 2px solid transparent;
+        }
+
+        .hero-card h1 { font-size: 1.5rem; margin-bottom: 10px; }
+        .hero-card button {
+            width: fit-content;
+            padding: 8px 20px;
+            border: none;
+            border-radius: 25px;
+            background: #e67e22;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        /* Horizontal Scrolling Sections */
+        .section-title {
+            padding: 20px 20px 10px 20px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .section-title a { font-size: 0.8rem; color: #e67e22; text-decoration: none; }
+
+        .horizontal-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 15px;
+            padding: 0 20px 10px 20px;
+            scroll-bar-width: none;
+        }
+        .horizontal-container::-webkit-scrollbar { display: none; }
+
+        .food-card {
+            min-width: 150px;
+            background: white;
+            border-radius: 15px;
+            padding: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            text-align: left;
+            cursor: pointer;
+        }
+        .food-card img { width: 100%; height: 100px; object-fit: cover; border-radius: 12px; margin-bottom: 8px; }
+        .food-card p { font-size: 0.9rem; font-weight: 600; margin-bottom: 4px; }
+        .food-card span { color: #e67e22; font-weight: 700; font-size: 0.85rem; }
+
+        /* Bottom Fixed Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: 65px;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid #eee;
+            z-index: 1000;
+        }
+        .nav-link {
+            text-decoration: none;
+            color: #999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.7rem;
+            gap: 4px;
+        }
+        .nav-link.active { color: #e67e22; }
+        .nav-link span:first-child { font-size: 1.3rem; }
+
+        /* Custom Professional Notification (Toast) */
+        #customAlert {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a1a1a;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 10000;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        #customAlert.show { bottom: 40px; }
+        .alert-dot { width: 10px; height: 10px; border-radius: 50%; background: #ff6b6b; }
+        /* Scrolling Ticker Styles */
+.ticker-wrap {
+    width: 100%;
+    overflow: hidden;
+    background-color: #fef5ef; /* Very light orange tint */
+    border-bottom: 1px solid #f0f0f0;
+    white-space: nowrap;
+    box-sizing: border-box;
+    padding: 8px 0;
+}
+
+.ticker-move {
+    display: inline-block;
+    padding-left: 100%; /* Start off-screen to the left */
+    animation: ticker 25s linear infinite;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.ticker-move span {
+    margin-right: 50px; /* Space between each message */
+    color: #333;
+}
+
+.ticker-move b {
+    color: #e67e22; /* Highlight the order details */
+}
+
+@keyframes ticker {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(-100%, 0); }
+}
+    </style>
+</head>
+<body>
+    <div id="installBanner" style="display:none; background:#e67e22; color:white; padding:15px; text-align:center;">
+    <p>Install O'XELA App for faster ordering!</p>
+    <button id="installBtn" style="padding:10px 20px; cursor:pointer;">Download Now</button>
+</div>
+
+    <header class="top-nav">
+        <div class="logo">O'XELA KITCHEN</div>
+        <button class="cart-icon" onclick="toggleDropdown()">☰</button>
+        
+        <div id="myDropdown" class="dropdown">
+            <a href="complaints.html">Complaint</a>
+            <a href="faq.html">FAQ</a>
+            <a href="settings.html">Settings</a>
+            <a href="#" onclick="logoutUser()" style="color: #e67e22; font-weight: bold;">Logout</a>
+        </div>
+    </header>
+
+    <main>
+    <div class="ticker-wrap" id="tickerContainer" style="display: none;">
+    <div class="ticker-move" id="tickerText">
+        </div>
+</div>
+        <section class="hero">
+            <div class="hero-card" id="mainHeroCard">
+                <h1 id="heroHeadline">Hungry?<br>Order now!</h1>
+                <button id="heroBtn" onclick="location.href='dishes.html'">View Menu</button>
+            </div>
+        </section>
+
+        <div class="section-title">
+            <span>Special Dishes</span>
+            <a href="dishes.html">See all</a>
+        </div>
+        <div class="horizontal-container">
+            <div class="food-card" onclick="window.addToCart('Jollof & Chicken', 3500)">
+                <img src="image/Jollof rice.jpeg" alt="Jollof">
+                <p>Jollof & Chicken</p>
+            </div>
+            <div class="food-card" onclick="window.addToCart('Egusi & Swallow', 4000)">
+                <img src="image/Pounded Yam.jpg" alt="Egusi">
+                <p>Egusi & Swallow</p>
+            </div>
+            <div class="food-card" onclick="window.addToCart('Fried Rice', 3200)">
+                <img src="image/Fried .jpeg" alt="Rice">
+                <p>Fried Rice</p>
+            </div>
+        </div>
+
+        <div class="section-title">
+            <span>Snacks & Drinks</span>
+            <a href="snacks.html">See all</a>
+        </div>
+        <div class="horizontal-container">
+            <div class="food-card" onclick="window.addToCart('Meat Pie', 800)">
+                <img src="image/Meat-pie.jpeg" alt="Meatpie">
+                <p>Meat Pie</p>
+            </div>
+            <div class="food-card" onclick="window.addToCart('Chilled Zobo', 500)">
+                <img src="image/Zobbo.png" alt="Drink">
+                <p>Chilled Zobo</p>
+            </div>
+            <div class="food-card" onclick="window.addToCart('Cupcake', 1200)">
+                <img src="image/Cup_cakes.png" alt="Cake">
+                <p>Cupcake</p>
+            </div>
+        </div>
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="home.html" class="nav-link active"><span>🏠</span><span>Home</span></a>
+        <a href="orders.html" class="nav-link"><span>🛒</span><span>Orders</span></a>
+        <a href="dishes.html" class="nav-link"><span>🍽️</span><span>Dishes</span></a>
+        <a href="snacks.html" class="nav-link"><span>🍿</span><span>Snacks</span></a>
+        <a href="profile.html" class="nav-link"><span>👤</span><span>Profile</span></a>
+    </nav>
+
+    <div id="customAlert">
+        <div class="alert-dot" id="alertDot"></div>
+        <span id="alertMessage">Notification Message</span>
+    </div>
+
+
+</div>
+
+    <script>
+        const API_URL = window.location.origin;
+
+        // --- NEW DYNAMIC FESTIVE HERO LOGIC ---
+        async function fetchFestiveTheme() {
+            try {
+                const response = await fetch(`${API_URL}/get_festive_settings`);
+                const theme = await response.json();
+
+                const heroCard = document.getElementById('mainHeroCard');
+                const headline = document.getElementById('heroHeadline');
+                const btn = document.getElementById('heroBtn');
+
+                if (theme && theme.active) {
+                    // 1. Update background image (uses dynamic image_url or a fallback)
+                    const bgImg = theme.image_url || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=500&q=60';
+                    heroCard.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('${bgImg}')`;
+                    
+                    // 2. Update headline text
+                    if(theme.title) {
+                        headline.innerHTML = theme.title.includes(" ") ? theme.title.replace(" ", "<br>") : theme.title;
+                    }
+                    
+                    // 3. Apply the theme color to button and card border
+                    if (theme.theme_color) {
+                        btn.style.backgroundColor = theme.theme_color;
+                        heroCard.style.borderColor = theme.theme_color;
+                        heroCard.style.boxShadow = `0 10px 20px ${theme.theme_color}33`; // 33 is approx 20% opacity
+                    }
+                } else {
+                    // Reset to default if Festive Mode is OFF
+                    heroCard.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=500&q=60')`;
+                    headline.innerHTML = "Hungry?<br>Order now!";
+                    btn.style.backgroundColor = "#e67e22";
+                    heroCard.style.borderColor = "transparent";
+                    heroCard.style.boxShadow = "none";
+                }
+            } catch (err) {
+                console.error("Festive settings could not be loaded:", err);
+            }
+        }
+
+        function showToast(message, type = "success") {
+            const alertBox = document.getElementById('customAlert');
+            const alertText = document.getElementById('alertMessage');
+            const alertDot = document.getElementById('alertDot');
+            alertText.innerText = message;
+            alertDot.style.background = (type === "error") ? "#ff4757" : "#2ed573";
+            alertBox.classList.add('show');
+            setTimeout(() => { alertBox.classList.remove('show'); }, 3000);
+        }
+
+        function toggleDropdown() {
+            document.getElementById("myDropdown").classList.toggle("show");
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.matches('.cart-icon')) {
+                var dropdowns = document.getElementsByClassName("dropdown");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+
+        // Updated Cart Logic with Toast
+        window.addToCart = function(name, price) {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            cart.push({ name, price });
+            localStorage.setItem('cart', JSON.stringify(cart));
+            showToast(name + " added to your cart! 🛒");
+        };
+
+        // Updated Logout with Toast (No confirmation popup)
+        function logoutUser() {
+            showToast("Logging out... See you soon!", "success");
+            localStorage.removeItem('oxela_user'); 
+            setTimeout(() => {
+                window.location.href = "index.html";
+            }, 1500);
+        }
+
+        async function startOrderTicker() {
+    const container = document.getElementById('tickerContainer');
+    const tickerText = document.getElementById('tickerText');
+
+    try {
+        const res = await fetch(`${API_URL}/get_order_ticker`);
+        const data = await res.json();
+
+        if (data && data.length > 0) {
+            // Join all order messages into one long string
+            const combinedMessages = data.map(item => `<span>${item.msg}</span>`).join("");
+            
+            tickerText.innerHTML = combinedMessages + combinedMessages; // Repeat twice for seamless loop
+            container.style.display = 'block';
+        }
+    } catch (e) {
+        console.log("Ticker failed to load:", e);
+    }
+}
+
+// Ensure this is called in your DOMContentLoaded listener
+window.addEventListener('DOMContentLoaded', () => {
+    fetchFestiveTheme();
+    startOrderTicker(); 
+});
+
+        async function processOrder() {
+            const userData = JSON.parse(localStorage.getItem('oxela_user'));
+            let basket = JSON.parse(localStorage.getItem('cart')) || [];
+            
+            if (!userData || basket.length === 0) {
+                showToast("Basket is empty or you are not logged in", "error");
+                return;
+            }
+
+            const orderData = {
+                customer_name: userData.name,
+                customer_phone: userData.phone,
+                delivery_address: userData.address,
+                items: basket, 
+                total: basket.reduce((acc, curr) => acc + curr.price, 0)
+            };
+
+            try {
+                const res = await fetch(`${API_URL}/submit_order`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData)
+                });
+
+                const result = await res.json();
+
+                if (res.ok) {
+                    showToast(`Order Successful! ID: ${result.order_id}`);
+                    localStorage.removeItem('cart'); 
+                    setTimeout(() => { window.location.href = "orders.html"; }, 2000);
+                } else {
+                    showToast("Order failed: " + result.message, "error");
+                }
+            } catch (e) {
+                showToast("Connection Error to Kitchen!", "error");
+            }
+        }
+
+        let deferredPrompt;
+        const banner = document.getElementById('installBanner');
+        const btnInstall = document.getElementById('installBtn');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            banner.style.display = 'block'; 
+
+            btnInstall.addEventListener('click', () => {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choice) => {
+                    if (choice.outcome === 'accepted') banner.style.display = 'none';
+                });
+            });
+        });
+
+        // Initialize festive theme check on load
+        window.addEventListener('DOMContentLoaded', () => {
+    fetchFestiveTheme();
+    startOrderTicker(); // Start listening to your backend ticker
+});
+    </script>
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O'XELA | History</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="manifest" href="/manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --accent: #ff6b6b; --dark: #0f172a; --bg: #f8fafc; --success: #27ae60; --warning: #f39c12; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+        
+        body { background: var(--bg); padding-bottom: 90px; }
+
+        .header-banner {
+            background: var(--dark);
+            color: white;
+            padding: 30px 20px;
+            border-radius: 0 0 30px 30px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .container { max-width: 450px; margin: 0 auto; padding: 0 15px; }
+
+        /* Modern Order Card */
+        .order-card { 
+            background: white; 
+            border-radius: 25px; 
+            padding: 20px; 
+            margin-bottom: 15px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.03); 
+            border: 1px solid #f1f5f9;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .order-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        
+        .order-id { font-weight: 800; color: var(--dark); font-size: 0.9rem; }
+        .order-date { font-size: 0.7rem; color: #94a3b8; font-weight: 600; }
+
+        /* Fixed Status Badges */
+        .status-badge { 
+            font-size: 0.65rem; 
+            font-weight: 800; 
+            padding: 5px 12px; 
+            border-radius: 12px; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+        }
+        .badge-pending { background: #fff7ed; color: #f59e0b; }
+        .badge-successful { background: #f0fdf4; color: #22c55e; }
+
+        .items-box { 
+            background: #f8fafc; 
+            padding: 12px; 
+            border-radius: 15px; 
+            font-size: 0.85rem; 
+            color: #475569; 
+            margin: 12px 0;
+            line-height: 1.4;
+        }
+
+        .order-footer { display: flex; justify-content: space-between; align-items: center; }
+        .price-tag { font-weight: 800; color: var(--accent); font-size: 1.1rem; }
+
+        /* Footer Nav */
+        .footer-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; background: white;
+            display: flex; justify-content: space-around; padding: 15px 0;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.05); z-index: 1000;
+        }
+        .nav-item { text-decoration: none; color: #bbb; display: flex; flex-direction: column; align-items: center; font-size: 0.65rem; font-weight: 600; }
+        .nav-item.active { color: var(--accent); }
+        .nav-icon { font-size: 1.4rem; margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+
+    <div class="header-banner">
+        <a href="home.html" style="color: white; text-decoration: none; font-weight: 800;">←</a>
+        <h2 style="font-size: 1.1rem; letter-spacing: 1px;">ORDER HISTORY</h2>
+        <div style="width: 20px;"></div>
+    </div>
+
+    <div class="container" id="historyContainer">
+        </div>
+
+    <div class="footer-nav">
+        <a href="home.html" class="nav-item">
+            <span class="nav-icon">🏠</span><span>Home</span>
+        </a>
+        <a href="orders.html
+        " class="nav-item">
+            <span class="nav-icon">🛒</span><span>Order</span>
+        </a>
+        <a href="history.html" class="nav-item active">
+            <span class="nav-icon">📜</span><span>History</span>
+        </a>
+        <a href="profile.html" class="nav-item">
+            <span class="nav-icon">👤</span><span>Profile</span>
+        </a>
+    </div>
+
+<script>
+   const API_URL = window.location.origin;
+
+    async function displayHistory() {
+        const container = document.getElementById('historyContainer');
+        const storedUser = localStorage.getItem('oxela_user');
+
+        if (!storedUser) {
+            container.innerHTML = `<div style="text-align:center; padding-top:100px;">
+                <p style="color:#64748b;">Please login to view history</p>
+                <a href="login.html" style="color:var(--accent); font-weight:800;">Login Now</a>
+            </div>`;
+            return;
+        }
+
+        const userData = JSON.parse(storedUser);
+        const email = userData.email;
+
+        try {
+            const response = await fetch(`${API_URL}/user_orders/${email}`);
+            if (!response.ok) throw new Error("Server Error");
+
+            const history = await response.json();
+
+            if (history.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align:center; padding:100px 20px; color:#94a3b8;">
+                        <span style="font-size:3rem;">🍽️</span>
+                        <h3 style="margin-top:10px;">No Orders Yet</h3>
+                        <p style="font-size:0.8rem;">When you order a meal, it will appear here!</p>
+                    </div>`;
+                return;
+            }
+
+            // Reverse to show newest first
+            container.innerHTML = history.reverse().map(order => {
+                // Check status - handles both upper and lower case from DB
+                const isSuccess = order.status && order.status.toUpperCase() === 'SUCCESSFUL';
+                const statusLabel = order.status || 'PENDING';
+                const badgeClass = isSuccess ? 'badge-successful' : 'badge-pending';
+
+                // Handle item listing (Regular vs Special)
+                let itemsList = "";
+                if (order.items && Array.isArray(order.items)) {
+                    itemsList = order.items.map(i => i.name).join(', ');
+                } else {
+                    itemsList = order.description || "Special Kitchen Request";
+                }
+
+                return `
+                <div class="order-card">
+                    <div class="order-header">
+                        <div>
+                            <div class="order-id">${order.order_id}</div>
+                            <div class="order-date">${order.timestamp}</div>
+                        </div>
+                        <span class="status-badge ${badgeClass}">${statusLabel}</span>
+                    </div>
+                    
+                    <div class="items-box">
+                        ${itemsList}
+                    </div>
+                    
+                    <div class="order-footer">
+                        <span style="font-size:0.7rem; color:#94a3b8; font-weight:700; text-transform:uppercase;">Amount Paid</span>
+                        <span class="price-tag">${order.total || order.budget || 'N/A'}</span>
+                    </div>
+                </div>
+                `;
+            }).join('');
+
+        } catch (err) {
+            container.innerHTML = `<div style="text-align:center; padding:50px; color:var(--accent);">
+                <p>Connection Lost</p>
+                <button onclick="location.reload()" style="background:none; border:none; color:var(--dark); font-weight:800; cursor:pointer;">Retry ↻</button>
+            </div>`;
+        }
+    }
+
+    window.onload = displayHistory;
+</script>
+</body>
+</html>

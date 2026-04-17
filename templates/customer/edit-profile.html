@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O'XELA | Edit Profile</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="manifest" href="/manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --accent: #ff6b6b; --dark: #0f172a; --bg: #f8fafc; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+        body { background: var(--bg); padding: 20px; }
+
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
+        .back-btn { text-decoration: none; font-size: 1.5rem; color: var(--dark); }
+
+        .form-card { background: white; padding: 25px; border-radius: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; }
+        .input-group input, .input-group textarea { 
+            width: 100%; padding: 15px; border: 1.5px solid #e2e8f0; border-radius: 15px; 
+            font-size: 1rem; outline: none; transition: 0.3s;
+        }
+        .input-group input:focus { border-color: var(--accent); background: #fffafa; }
+
+        .save-btn { 
+            width: 100%; padding: 18px; background: var(--dark); color: white; 
+            border: none; border-radius: 20px; font-weight: 800; font-size: 1rem; cursor: pointer;
+            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.2);
+        }
+        
+        #msg { text-align: center; margin-top: 15px; font-size: 0.9rem; font-weight: 600; display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="profile.html" class="back-btn">←</a>
+        <h2 style="font-weight: 800;">Edit Profile</h2>
+    </div>
+
+    <div class="form-card">
+        <div class="input-group">
+            <label>Full Name</label>
+            <input type="text" id="editName" placeholder="Your Name">
+        </div>
+
+        <div class="input-group">
+            <label>Phone Number</label>
+            <input type="tel" id="editPhone" placeholder="090...">
+        </div>
+
+        <div class="input-group">
+            <label>Delivery Address</label>
+            <textarea id="editAddress" rows="4" placeholder="House number, Street, City..."></textarea>
+        </div>
+
+        <button class="save-btn" onclick="saveChanges()">Save Changes ✨</button>
+        <p id="msg"></p>
+    </div>
+
+    <script>
+    const API_URL = window.location.origin;
+
+        async function loadCurrentData() {
+            const session = JSON.parse(localStorage.getItem('oxela_user'));
+            if (!session) { window.location.href = 'login.html'; return; }
+
+            try {
+                // Fetch the latest data from the database
+                const res = await fetch(`${API_URL}/get_profile/${session.email}`);
+                const user = await res.json();
+
+                if (res.ok) {
+                    document.getElementById('editName').value = user.name || "";
+                    document.getElementById('editPhone').value = user.phone || "";
+                    document.getElementById('editAddress').value = user.address || "";
+                }
+            } catch (err) {
+                console.log("Error loading user data");
+            }
+        }
+
+        async function saveChanges() {
+            const session = JSON.parse(localStorage.getItem('oxela_user'));
+            const msg = document.getElementById('msg');
+
+            const updatedData = {
+                email: session.email,
+                name: document.getElementById('editName').value,
+                phone: document.getElementById('editPhone').value,
+                address: document.getElementById('editAddress').value
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/update_profile`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedData)
+                });
+
+                if (response.ok) {
+                    msg.style.display = "block";
+                    msg.style.color = "#27ae60";
+                    msg.innerText = "Profile Updated Successfully!";
+                    
+                    // Update LocalStorage name just in case it changed
+                    session.name = updatedData.name;
+                    localStorage.setItem('oxela_user', JSON.stringify(session));
+
+                    setTimeout(() => {
+                        window.location.href = 'profile.html';
+                    }, 1500);
+                } else {
+                    throw new Error();
+                }
+            } catch (err) {
+                msg.style.display = "block";
+                msg.style.color = "#ff6b6b";
+                msg.innerText = "Failed to update profile. Try again.";
+            }
+        }
+
+        window.onload = loadCurrentData;
+    </script>
+</body>
+</html>

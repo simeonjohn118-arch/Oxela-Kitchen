@@ -1,0 +1,354 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O'XELA | Checkout</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --accent: #ff6b6b; --dark: #121212; --bg: #f4f7f6; --success: #27ae60; --warning: #f39c12; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+        body { background-color: var(--bg); padding-bottom: 90px; } 
+
+        /* Top Navigation & Dropdown */
+        .top-nav { 
+            padding: 20px; display: flex; align-items: center; justify-content: space-between; 
+            background: white; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+        }
+        .back-link { text-decoration: none; color: var(--dark); font-weight: 800; font-size: 1.2rem; }
+        
+        .menu-container { position: relative; }
+        .menu-icon { font-size: 1.5rem; cursor: pointer; padding: 5px; color: var(--dark); }
+        .dropdown {
+            position: absolute; right: 0; top: 40px; background: white; border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 180px; display: none; overflow: hidden; border: 1px solid #eee;
+        }
+        .dropdown a {
+            display: block; padding: 15px; text-decoration: none; color: #444; font-size: 0.9rem; border-bottom: 1px solid #f9f9f9;
+        }
+        .dropdown a:hover { background: #fff5f5; color: var(--accent); }
+
+        .container { max-width: 450px; margin: 0 auto; padding: 20px; }
+
+        /* Cards & UI */
+        .card { background: white; border-radius: 25px; padding: 25px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
+        .section-tag { background: #ffe3e3; color: var(--accent); padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-bottom: 15px; display: inline-block; }
+        .item-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #f8f8f8; }
+
+        .remove-btn {
+            color: #ff4d4d;
+            font-weight: 800;
+            cursor: pointer;
+            padding: 0 8px;
+            font-size: 1.1rem;
+            border: none;
+            background: transparent;
+        }
+
+        .input-box { margin-bottom: 15px; }
+        .input-box label { display: block; font-size: 0.8rem; margin-bottom: 5px; font-weight: 600; color: #888; }
+        .input-box input, .input-box textarea, .input-box select { width: 100%; padding: 14px; border: none; border-radius: 12px; background: #f8f9fa; font-size: 1rem; outline: none; }
+
+        .total-strip { background: var(--dark); color: white; padding: 20px; border-radius: 20px; display: flex; flex-direction: column; gap: 5px; }
+        .price-line { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        
+        .pay-btn { width: 100%; margin-top: 20px; padding: 20px; background: linear-gradient(135deg, #ff6b6b, #ff8e53); color: white; border: none; border-radius: 20px; font-size: 1.1rem; font-weight: 800; cursor: pointer; }
+        .pay-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* Store Closed Overlay */
+        #closedNotice { display: none; background: #fff1f0; color: #cf1322; padding: 15px; border-radius: 15px; border: 1px solid #ffa39e; margin-bottom: 20px; text-align: center; font-weight: 600; }
+
+        /* Bottom Navbar */
+        .footer-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; background: white;
+            display: flex; justify-content: space-around; padding: 15px 0;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.05); z-index: 1000;
+        }
+        .nav-item { text-decoration: none; color: #bbb; display: flex; flex-direction: column; align-items: center; font-size: 0.65rem; font-weight: 600; }
+        .nav-item.active { color: var(--accent); }
+        .nav-icon { font-size: 1.4rem; margin-bottom: 4px; }
+
+        /* Modal & Voucher */
+        #paymentModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .voucher { background: white; border-radius: 30px; width: 100%; max-width: 400px; padding: 30px; text-align: center; }
+        .selected-acc { text-align: left; background: #fdf2f2; padding: 20px; border-radius: 15px; margin: 15px 0; border: 2px dashed var(--accent); cursor: pointer; }
+
+        /* Alerts */
+        #customAlert { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: #1a1a1a; color: white; padding: 12px 20px; border-radius: 12px; font-weight: 500; z-index: 10000; transition: 0.5s; display: flex; align-items: center; gap: 12px; min-width: 280px; }
+        #customAlert.show { bottom: 100px; } 
+        .alert-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+        .pending-box { display: none; padding: 20px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="top-nav">
+        <a href="home.html" class="back-link">←</a>
+        <h2 style="font-size: 1rem; font-weight: 800;">CHECKOUT</h2>
+        <div class="menu-container">
+            <div class="menu-icon" onclick="toggleMenu()">⋮</div>
+            <div class="dropdown" id="navDropdown">
+                <a href="history.html">📜 Order History</a>
+                <a href="special.html">✨ Special Order</a>
+                <a href="home.html">🏠 Home Page</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="closedNotice">
+            🔒 O'XELA KITCHEN is currently closed. Please check back during business hours.
+        </div>
+
+        <div class="card">
+            <span class="section-tag">Basket</span>
+            <div id="cartList"></div>
+        </div>
+
+        <div class="card">
+            <span class="section-tag">Delivery Details</span>
+            <div class="input-box"><label>Full Name</label><input type="text" id="custName"></div>
+            <div class="input-box"><label>Phone Number</label><input type="tel" id="custPhone"></div>
+            
+            <div class="input-box">
+                <label>Select Delivery Area</label>
+                <select id="deliveryLoc" onchange="calculateTotal()">
+                    <option value="" data-price="0">Choose Location...</option>
+                </select>
+            </div>
+
+            <div class="input-box"><label>House/Office Number & Street</label><textarea id="custAddr" rows="2" placeholder="e.g. House 4, Close A..."></textarea></div>
+        </div>
+
+        <div class="total-strip">
+            <div class="price-line">
+                <span style="opacity: 0.7; font-size: 0.8rem;">Subtotal:</span>
+                <span id="subTotalVal" style="font-weight: 600;">₦0</span>
+            </div>
+            <div class="price-line">
+                <span style="opacity: 0.7; font-size: 0.8rem;">Delivery:</span>
+                <span id="deliveryVal" style="font-weight: 600;">₦0</span>
+            </div>
+            <div class="price-line" style="margin-top: 5px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 5px;">
+                <span style="font-weight: 800;">Total:</span>
+                <span style="font-size: 1.4rem; font-weight: 800; color: #ff8e53;" id="totalVal">₦0</span>
+            </div>
+        </div>
+
+        <button class="pay-btn" id="submitBtn" onclick="openPaymentVoucher()">Submit Order ⚡</button>
+    </div>
+
+    <div class="footer-nav">
+        <a href="home.html" class="nav-item">
+            <span class="nav-icon">🏠</span><span>Home</span>
+        </a>
+        <a href="orders.html" class="nav-item active">
+            <span class="nav-icon">🛒</span><span>Order</span>
+        </a>
+        <a href="dishes.html" class="nav-item">
+            <span class="nav-icon">🍽️</span><span>Dishes</span>
+        </a>
+        <a href="snacks.html" class="nav-item">
+            <span class="nav-icon">🍿</span><span>Snacks</span>
+        </a>
+        <a href="profile.html" class="nav-item">
+            <span class="nav-icon">👤</span><span>Profile</span>
+        </a>
+    </div>
+
+    <div id="paymentModal">
+        <div class="voucher">
+            <div id="voucherStep">
+                <span class="section-tag">Payment Details</span>
+                <p style="font-size: 0.85rem; color: #666; margin: 10px 0;">Send exact total to:</p>
+                <div class="selected-acc" id="randomAccountBox" onclick="copyAcc()"></div>
+                <button class="pay-btn" onclick="markAsPaid()">I Have Paid ✅</button>
+            </div>
+            <div id="pendingStep" class="pending-box">
+                <div style="font-size: 3rem; margin-bottom: 10px;">⌛</div>
+                <h3 style="color: var(--warning);">Processing...</h3>
+                <p style="font-size: 0.85rem; color: #777;">Please wait while we record your order.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="customAlert">
+        <div class="alert-dot"></div>
+        <span id="alertMessage"></span>
+    </div>
+
+    <script>
+   const API_URL = window.location.origin;
+    const accounts = [
+        { bank: "GTBank", num: "0123456789", name: "O'XELA KITCHEN" },
+        { bank: "Zenith Bank", num: "1012345678", name: "O'XELA GLOBAL" },
+        { bank: "Kuda MFB", num: "2012345678", name: "ALEX O'XELA" },
+        { bank: "Moniepoint", num: "5012345678", name: "O'XELA FOODS" },
+        { bank: "OPay", num: "8012345678", name: "O'XELA KITCHEN" }
+    ];
+
+    let foodTotal = 0;
+
+    window.onload = function() {
+        checkStoreStatus();
+        loadLocations();
+        loadBasket();
+    };
+
+    async function checkStoreStatus() {
+        try {
+            const res = await fetch(`${API_URL}/get_store_status`);
+            const data = await res.json();
+            const config = data.config;
+
+            // Logic to calculate if open based on time
+            const now = new Date();
+            const currentTime = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+            
+            const isOutsideHours = currentTime < config.open_time || currentTime > config.close_time;
+            
+            if (config.manual_closed || isOutsideHours) {
+                document.getElementById('closedNotice').style.display = 'block';
+                document.getElementById('submitBtn').disabled = true;
+                document.getElementById('submitBtn').innerText = "Store Closed 🔒";
+                // Optionally update notice text with actual hours
+                document.getElementById('closedNotice').innerText = `🔒 O'XELA KITCHEN is currently closed. We are open from ${config.open_time} to ${config.close_time}.`;
+            }
+        } catch (err) { console.log("Status Check Failed", err); }
+    }
+
+    async function loadLocations() {
+        try {
+            const res = await fetch(`${API_URL}/get_delivery_zones`);
+            const zones = await res.json();
+            const select = document.getElementById('deliveryLoc');
+            zones.forEach(z => {
+                let opt = document.createElement('option');
+                opt.value = z.location;
+                opt.dataset.price = z.price;
+                opt.innerText = `${z.location} (₦${z.price})`;
+                select.appendChild(opt);
+            });
+        } catch (err) { console.log("Location Load Failed"); }
+    }
+
+    function toggleMenu() {
+        const drop = document.getElementById('navDropdown');
+        drop.style.display = drop.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function showToast(msg) {
+        const alert = document.getElementById('customAlert');
+        document.getElementById('alertMessage').innerText = msg;
+        alert.classList.add('show');
+        setTimeout(() => alert.classList.remove('show'), 3000);
+    }
+
+    function loadBasket() {
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const container = document.getElementById('cartList');
+        foodTotal = 0;
+        if(cart.length === 0) {
+            container.innerHTML = "<p style='text-align:center; padding:10px; color:#bbb;'>Basket Empty</p>";
+            calculateTotal();
+            return;
+        }
+        container.innerHTML = cart.map((item, index) => {
+            let price = parseInt(String(item.price).replace(/\D/g, '')) || 0;
+            foodTotal += price;
+            return `
+                <div class="item-row">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <button class="remove-btn" onclick="removeFromCart(${index})">×</button>
+                        <span>${item.name}</span>
+                    </div>
+                    <strong>₦${price.toLocaleString()}</strong>
+                </div>`;
+        }).join('');
+        calculateTotal();
+    }
+
+    function removeFromCart(index) {
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        cart.splice(index, 1);
+        localStorage.setItem('cart', JSON.stringify(cart));
+        loadBasket();
+        showToast("Item removed 🗑️");
+    }
+
+    function calculateTotal() {
+        const select = document.getElementById('deliveryLoc');
+        const deliveryFee = parseInt(select.options[select.selectedIndex].dataset.price) || 0;
+        const grandTotal = foodTotal + deliveryFee;
+
+        document.getElementById('subTotalVal').innerText = "₦" + foodTotal.toLocaleString();
+        document.getElementById('deliveryVal').innerText = "₦" + deliveryFee.toLocaleString();
+        document.getElementById('totalVal').innerText = "₦" + grandTotal.toLocaleString();
+    }
+
+    function openPaymentVoucher() {
+        const loc = document.getElementById('deliveryLoc').value;
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        if(cart.length === 0) {
+            showToast("Your basket is empty!"); return;
+        }
+        if(!document.getElementById('custName').value || !document.getElementById('custPhone').value || !loc) {
+            showToast("Fill in details & Select Location!"); return;
+        }
+        const random = accounts[Math.floor(Math.random() * accounts.length)];
+        document.getElementById('randomAccountBox').innerHTML = `
+            <p><strong>Bank:</strong> ${random.bank}</p>
+            <p><strong>Account:</strong> <span id="accNum" style="color:var(--accent); font-weight:800;">${random.num}</span></p>
+            <p><strong>Name:</strong> ${random.name}</p>
+        `;
+        document.getElementById('paymentModal').style.display = 'flex';
+    }
+
+    function copyAcc() {
+        navigator.clipboard.writeText(document.getElementById('accNum').innerText);
+        showToast("Account Copied! ✅");
+    }
+
+    function markAsPaid() {
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const total = document.getElementById('totalVal').innerText;
+        const location = document.getElementById('deliveryLoc').value;
+        const street = document.getElementById('custAddr').value;
+        
+        const storedUser = JSON.parse(localStorage.getItem('oxela_user'));
+        if (!storedUser || !storedUser.email) {
+            showToast("Error: Please login again"); return;
+        }
+
+        document.getElementById('voucherStep').style.display = 'none';
+        document.getElementById('pendingStep').style.display = 'block';
+
+        fetch(`${API_URL}/submit_order`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                user_email: storedUser.email,
+                customer_name: document.getElementById('custName').value,
+                customer_phone: document.getElementById('custPhone').value,
+                delivery_address: `${location}: ${street}`,
+                items: cart,
+                total: total
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            localStorage.removeItem('cart');
+            setTimeout(() => { window.location.href = 'history.html'; }, 2000);
+        })
+        .catch(err => showToast("Sync failed. Is Python running?"));
+    }
+
+    window.onclick = (e) => { 
+        if (!e.target.matches('.menu-icon')) document.getElementById('navDropdown').style.display = "none"; 
+    };
+</script>
+</body>
+</html>

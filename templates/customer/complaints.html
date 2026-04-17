@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O'XELA KITCHEN | Resolution Center</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="manifest" href="/manifest.json">
+    <style>
+        :root {
+            --oxela-orange: #e67e22;
+            --oxela-dark: #d35400;
+            --bg-light: #fcfcfc;
+            --user-msg: #e67e22;
+            --kitchen-msg: #f1f5f9;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: #333;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            z-index: 100;
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: var(--oxela-orange);
+            font-size: 1.2rem;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 500px;
+            margin: 0 auto;
+            width: 100%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Form Area */
+        #complaintFormArea {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid #eee;
+        }
+
+        /* VIEW RESPONSE BUTTON STYLE - Moved under the main button */
+        #viewResponseBtn {
+            display: none;
+            background: white;
+            color: var(--oxela-orange);
+            padding: 12px;
+            border-radius: 12px;
+            margin-top: 15px;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid var(--oxela-orange);
+            transition: 0.3s;
+        }
+
+        #viewResponseBtn:hover {
+            background: #fff9f4;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #444;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1.5px solid #eee;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .form-group input:focus {
+            border-color: var(--oxela-orange);
+            background: #fff9f4;
+        }
+
+        /* Live Chat Box Area */
+        #chatInterface {
+            display: none;
+            flex-direction: column;
+            height: 70vh;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border: 1px solid #eee;
+        }
+
+        #chatMessages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: #fdfdfd;
+        }
+
+        .msg {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        /* ALIGNMENT: Customer is on the Right (sent style) with Orange background */
+        .msg.sent {
+            align-self: flex-end;
+            background: var(--user-msg);
+            color: white;
+            border-bottom-right-radius: 2px;
+        }
+
+        /* ALIGNMENT: Admin is on the Left (received style) with Gray background */
+        .msg.received {
+            align-self: flex-start;
+            background: var(--kitchen-msg);
+            color: #333;
+            border-bottom-left-radius: 2px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .chat-input-area {
+            padding: 15px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+        }
+
+        .send-btn {
+            background: var(--oxela-orange);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Toast Alert */
+        #customAlert {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a1a1a;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            z-index: 10000;
+            transition: 0.5s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #customAlert.show { bottom: 40px; }
+        .alert-dot { width: 10px; height: 10px; border-radius: 50%; }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <a href="home.html" class="back-btn">←</a>
+        <h1 id="headerTitle" style="font-size: 1.1rem;">Submit a Complaint</h1>
+    </header>
+
+    <main class="container">
+        <div id="complaintFormArea">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="color: var(--oxela-dark);">We're Listening</h2>
+                <p style="font-size: 0.85rem; color: #666;">Provide details to start a live chat.</p>
+            </div>
+
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="custName" placeholder="Your Name">
+            </div>
+
+            <div class="form-group">
+                <label>Delivery Address</label>
+                <input type="text" id="custAddress" placeholder="Where was it delivered?">
+            </div>
+
+            <div class="form-group">
+                <label>Order ID (Required)</label>
+                <input type="text" id="orderId" placeholder="e.g. #OX-1234">
+            </div>
+
+            <div class="form-group">
+                <label>Describe the issue</label>
+                <textarea id="issueDescription" style="width:100%; height:80px; padding:10px; border-radius:10px; border:1.5px solid #eee; outline:none;" placeholder="What went wrong?"></textarea>
+            </div>
+
+            <button class="send-btn" style="width: 100%; padding: 15px;" onclick="startResolution()">
+                Start Live Resolution
+            </button>
+
+            <div id="viewResponseBtn" onclick="switchToChat()">
+                View Existing Response 📩
+            </div>
+        </div>
+
+        <div id="chatInterface">
+            <div id="chatMessages"></div>
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" placeholder="Type a message...">
+                <button class="send-btn" onclick="sendChatMessage()">Send</button>
+            </div>
+        </div>
+    </main>
+
+    <div id="customAlert">
+        <div class="alert-dot" id="alertDot"></div>
+        <span id="alertMessage"></span>
+    </div>
+
+    <script>
+       const API_URL = window.location.origin;
+        let activeOrderId = localStorage.getItem('lastChatId') || "";
+
+        window.onload = function() {
+            if (activeOrderId) {
+                document.getElementById('viewResponseBtn').style.display = 'block';
+            }
+        };
+
+        async function startResolution() {
+            const name = document.getElementById('custName').value;
+            const address = document.getElementById('custAddress').value;
+            const issue = document.getElementById('issueDescription').value;
+            const orderIdInput = document.getElementById('orderId').value;
+
+            if (!name || !issue || !orderIdInput) {
+                showToast("Please provide name, issue, and Order ID.", "error");
+                return;
+            }
+
+            const complaintData = {
+                customer_name: name,
+                customer_address: address,
+                issue: issue,
+                user_email: localStorage.getItem('userEmail') || "Guest",
+                status: "OPEN"
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/submit_complaint`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(complaintData)
+                });
+                const result = await response.json();
+
+                if (result.status === "success") {
+                    activeOrderId = result.order_id;
+                    localStorage.setItem('lastChatId', activeOrderId);
+                    
+                    const systemMessage = `📋 NEW COMPLAINT DETAILS:\nName: ${name}\nAddress: ${address}\nOrder ID: ${orderIdInput}\nIssue: ${issue}`;
+                    
+                    await fetch(`${API_URL}/send_message`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            order_id: activeOrderId,
+                            sender: "Customer",
+                            text: systemMessage
+                        })
+                    });
+
+                    switchToChat();
+                }
+            } catch (err) {
+                showToast("Server Connection Error", "error");
+            }
+        }
+
+        function switchToChat() {
+            document.getElementById('complaintFormArea').style.display = 'none';
+            document.getElementById('viewResponseBtn').style.display = 'none';
+            document.getElementById('chatInterface').style.display = 'flex';
+            document.getElementById('headerTitle').innerText = "Chat: " + activeOrderId;
+            
+            fetchMessages(); 
+            setInterval(fetchMessages, 3000);
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const payload = {
+                order_id: activeOrderId,
+                sender: "Customer",
+                text: text
+            };
+
+            try {
+                await fetch(`${API_URL}/send_message`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                input.value = "";
+                fetchMessages();
+            } catch (err) {
+                showToast("Failed to send message", "error");
+            }
+        }
+
+        async function fetchMessages() {
+            if (!activeOrderId) return;
+            try {
+                const res = await fetch(`${API_URL}/get_chat/${activeOrderId}`);
+                const data = await res.json();
+                renderChat(data);
+            } catch (err) {}
+        }
+
+        function renderChat(messages) {
+            const chatBox = document.getElementById('chatMessages');
+            let html = "";
+            
+            if (messages.length === 0) {
+                html = `<div class="msg received">Connecting to Support...</div>`;
+            } else {
+                messages.forEach(m => {
+                    // Logic: If sender is Customer, bubble goes to RIGHT (sent)
+                    // If sender is Admin, bubble goes to LEFT (received)
+                    const isCustomer = m.sender === "Customer";
+                    const bubbleClass = isCustomer ? 'sent' : 'received';
+                    
+                    const formattedText = m.text.replace(/\n/g, '<br>');
+                    html += `<div class="msg ${bubbleClass}">${formattedText}</div>`;
+                });
+            }
+            
+            chatBox.innerHTML = html;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function showToast(message, type = "success") {
+            const alertBox = document.getElementById('customAlert');
+            document.getElementById('alertMessage').innerText = message;
+            document.getElementById('alertDot').style.background = (type === "error") ? "#ff4757" : "#2ed573";
+            alertBox.classList.add('show');
+            setTimeout(() => alertBox.classList.remove('show'), 3000);
+        }
+    </script>
+</body>
+</html>

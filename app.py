@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_cors import CORS
 import json
 import os
@@ -14,7 +14,16 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 
 app = Flask(__name__)
+import os
 
+@app.route('/debug')
+def debug():
+    # This will list everything inside your templates folder
+    try:
+        files = os.listdir('templates/customer')
+        return f"I found the customer folder! Inside are: {files}"
+    except Exception as e:
+        return f"Error: I can't even find the folder. Error message: {e}"
 # --- THE HANDSHAKE TOOL (CORS) ---
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
@@ -550,15 +559,9 @@ def get_active_chats():
         print(f"Error fetching active chats: {e}")
         return jsonify([])
 
-@app.route('/static/Kitchen.jpeg')
+@app.route('/static/image/kitchen.jpeg.png')
 def serve_hero_image():
     return send_from_directory(os.path.join(BASE_DIR, 'static'), 'Kitchen.jpeg', mimetype='image/jpeg')
-
-# --- SERVING HTML FILES ---
-
-@app.route('/')
-def root():
-    return send_from_directory(BASE_DIR, 'index.html')
 
 @app.route('/<path:path>')
 def serve_any_file(path):
@@ -604,9 +607,24 @@ def serve_festive_image(filename):
 def get_festive_settings():
     return jsonify(festive_config)
 
+@app.route('/')
+def login_page():
+    # This makes index.html (your login) the very first page
+    return render_template('customer/index.html')
+
+@app.route('/home')
+def customer_home():
+    # This is the page they see AFTER they log in
+    return render_template('customer/home.html')
+
+@app.route('/admin_hub')
+def admin_hub_view():
+    # This tells Flask to look in templates/master/admin_hub.html
+    return render_template('master/index.html.html')
+
 # Master App updates settings (with image upload)
 @app.route('/update_festive', methods=['POST'])
-def update_festive():
+def handle_festive_save():  # I changed the name from 'update_festive' to 'handle_festive_save'
     global festive_config
     
     # Handle Image Upload if present
@@ -624,6 +642,17 @@ def update_festive():
     festive_config['theme_color'] = request.form.get('theme_color', festive_config['theme_color'])
     
     return jsonify({"message": "Festive theme updated successfully!", "current": festive_config})
+# 1. THE FACE: This shows you the Master Dashboard
+@app.route('/oxela_admin_panel') 
+def master_dashboard():
+    # We tell Flask to look specifically in the 'master' subfolder
+    return render_template('master/settings.html')
+    
+    # ... (All your existing code for handling images and form data) ...
+    
+    return jsonify({"message": "Festive theme updated successfully!", "current": festive_config})
+
+
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))

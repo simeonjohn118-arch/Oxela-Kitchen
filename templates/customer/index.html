@@ -1,0 +1,261 @@
+﻿<!DOCTYPE html>
+<html lang="en-UK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O'xela Upright Kitchen | Premium Dining</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#e67e22">
+<link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-512.png') }}">
+
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <style>
+        :root { --brand-red: #e67e22; --brand-green: #27ae60; --brand-gold: #d4af37; --bg-cream: #fdfaf7; }
+        body { background-color: var(--bg-cream); margin: 0; font-family: 'Poppins', sans-serif; color: #333; overflow-x: hidden; }
+        header { background: var(--brand-red); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; color: white; position: sticky; top: 0; z-index: 1000; border-bottom: 4px solid var(--brand-green); }
+        .logo { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 900; }
+        .user-chip { background: rgba(255,255,255,0.2); padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; display: none; }
+        .hero { height: 60vh; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('static/image/Kitchen.jpeg.png'); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; text-align: center; color: white; }
+        .hero h1 { font-family: 'Playfair Display', serif; font-size: 3.5rem; margin: 0; }
+        .btn-order-now { background: var(--brand-gold); color: #000; padding: 15px 40px; border-radius: 50px; font-weight: 800; text-decoration: none; display: inline-block; margin-top: 20px; cursor: pointer; border: none; }
+        #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 2000; display: none; align-items: center; justify-content: center; }
+        .auth-card { background: white; width: 90%; max-width: 400px; padding: 40px; border-radius: 30px; text-align: center; border-top: 10px solid var(--brand-red); }
+        .input-group { margin-bottom: 15px; text-align: left; }
+        .input-group label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #888; }
+        input, textarea { width: 100%; padding: 12px; border: 1.5px solid #eee; border-radius: 10px; margin-top: 5px; font-family: inherit; box-sizing: border-box; }
+        .btn-primary { background: var(--brand-red); color: white; border: none; padding: 16px; width: 100%; border-radius: 12px; font-weight: 800; cursor: pointer; margin-top: 10px; }
+        .btn-secondary { background: none; border: none; color: var(--brand-red); font-weight: 600; cursor: pointer; margin-top: 15px; font-size: 0.85rem; text-decoration: underline; }
+        .hidden { display: none !important; }
+        #customAlert { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: #1a1a1a; color: white; padding: 12px 20px; border-radius: 12px; z-index: 10000; transition: 0.5s; display: flex; align-items: center; gap: 12px; min-width: 300px; }
+        #customAlert.show { bottom: 40px; }
+        .alert-dot { width: 10px; height: 10px; border-radius: 50%; }
+        
+        /* Fixed verification styles */
+        .verification-box { background: #f0f9f4; border: 2px dashed var(--brand-green); padding: 15px; border-radius: 15px; margin-bottom: 15px; display: none; }
+        input:read-only { background-color: #f9f9f9; color: #777; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">O'XELA KITCHEN</div>
+    <div id="userGreeting" class="user-chip">👤 Guest</div>
+</header>
+
+<div id="homeHero" class="hero">
+    <div>
+        <h1>Premium African Dining</h1>
+        <p>Upright taste in every bite.</p>
+        <button class="btn-order-now" onclick="checkAuthAndOrder()">START YOUR ORDER</button>
+    </div>
+</div>
+
+<div id="authOverlay">
+    <div id="loginView" class="auth-card">
+        <h2 style="font-family:'Playfair Display'; color:var(--brand-red);">Welcome Back</h2>
+        <div class="input-group">
+            <label>Gmail Address</label>
+            <input type="email" id="loginEmail" placeholder="example@gmail.com">
+        </div>
+        <div class="input-group">
+            <label>Password</label>
+            <input type="password" id="loginPass" placeholder="Enter Password">
+        </div>
+        <button class="btn-primary" onclick="handleLogin()">Sign In</button>
+        <button class="btn-secondary" onclick="toggleAuth('signup')">Create a New Account</button>
+        <button class="btn-secondary" onclick="toggleAuth('forgot')" style="color:#666; text-decoration:none;">Forgot Password?</button>
+        <button class="btn-secondary" onclick="closeAuth()" style="color:#aaa; text-decoration:none; display:block; margin: 10px auto;">✕ Cancel</button>
+    </div>
+
+    <div id="signupView" class="auth-card hidden">
+        <h2 style="font-family:'Playfair Display'; color:var(--brand-red);">Join O'xela</h2>
+        <div id="regMainForm">
+            <div class="input-group"><label>Full Name</label><input type="text" id="regName"></div>
+            <div class="input-group">
+                <label>Gmail Address</label>
+                <div style="display:flex; gap:5px;">
+                    <input type="email" id="regEmail" placeholder="example@gmail.com">
+                    <button id="regSendBtn" onclick="sendVerificationCode('reg')" style="width:100px; background:var(--brand-green); color:white; border:none; border-radius:10px; cursor:pointer; font-size:0.7rem;">Send Code</button>
+                </div>
+            </div>
+
+            <div id="regVerifyGroup" class="verification-box">
+                <label style="color:var(--brand-green); font-weight:bold; display:block; margin-bottom:5px;">Check your Gmail!</label>
+                <input type="text" id="regCode" maxlength="6" placeholder="000000" style="text-align:center; font-size:1.4rem; border:2px solid var(--brand-green);">
+            </div>
+
+            <div class="input-group"><label>Phone Number</label><input type="tel" id="regPhone"></div>
+            <div class="input-group"><label>Address</label><textarea id="regAddress" style="height:50px;"></textarea></div>
+            <div class="input-group"><label>Password</label><input type="password" id="regPass"></div>
+            <button class="btn-primary" onclick="handleRegister()">Complete Sign Up</button>
+        </div>
+        <button class="btn-secondary" onclick="toggleAuth('login')">Back to Login</button>
+    </div>
+
+    <div id="forgotView" class="auth-card hidden">
+        <h2 style="font-family:'Playfair Display'; color:var(--brand-red);">Reset Password</h2>
+        <p style="font-size:0.8rem; color:#666;">Verify your Gmail to reset password.</p>
+        <div class="input-group">
+            <label>Registered Gmail</label>
+            <div style="display:flex; gap:5px;">
+                <input type="email" id="forgotEmail" placeholder="example@gmail.com">
+                <button id="forgotSendBtn" onclick="sendVerificationCode('forgot')" style="width:100px; background:orange; color:white; border:none; border-radius:10px; cursor:pointer; font-size:0.7rem;">Get Code</button>
+            </div>
+        </div>
+        <div id="resetFields" class="hidden">
+            <div class="input-group verification-box" style="display:block;">
+                <label style="color:var(--brand-green);">Verification Code</label>
+                <input type="text" id="resetCode" maxlength="6" placeholder="000000" style="text-align:center;">
+            </div>
+            <div class="input-group"><label>New Password</label><input type="password" id="resetNewPass"></div>
+            <button class="btn-primary" onclick="handleResetPassword()">Update Password</button>
+        </div>
+        <button class="btn-secondary" onclick="toggleAuth('login')">Cancel</button>
+    </div>
+</div>
+
+<div id="customAlert">
+    <div class="alert-dot" id="alertDot"></div>
+    <span id="alertMessage">Notification Message</span>
+</div>
+
+<script>
+const API_URL = window.location.origin;
+   
+    function showToast(message, type = "success") {
+        const alertBox = document.getElementById('customAlert');
+        document.getElementById('alertMessage').innerText = message;
+        document.getElementById('alertDot').style.background = (type === "error") ? "#ff4757" : "#2ed573";
+        alertBox.classList.add('show');
+        setTimeout(() => { alertBox.classList.remove('show'); }, 3000);
+    }
+
+    function toggleAuth(view) {
+        document.getElementById('loginView').classList.add('hidden');
+        document.getElementById('signupView').classList.add('hidden');
+        document.getElementById('forgotView').classList.add('hidden');
+        
+        if(view === 'login') document.getElementById('loginView').classList.remove('hidden');
+        if(view === 'signup') document.getElementById('signupView').classList.remove('hidden');
+        if(view === 'forgot') document.getElementById('forgotView').classList.remove('hidden');
+    }
+
+    function checkAuthAndOrder() {
+        if(!localStorage.getItem('oxela_user')) {
+            document.getElementById('authOverlay').style.display = 'flex';
+        } else {
+            window.location.href = "home.html";
+        }
+    }
+
+    function closeAuth() { document.getElementById('authOverlay').style.display = 'none'; }
+
+    async function sendVerificationCode(mode) {
+        const emailInput = (mode === 'reg') ? document.getElementById('regEmail') : document.getElementById('forgotEmail');
+        const sendBtn = (mode === 'reg') ? document.getElementById('regSendBtn') : document.getElementById('forgotSendBtn');
+        const verifyBox = (mode === 'reg') ? document.getElementById('regVerifyGroup') : document.getElementById('resetFields');
+        
+        // Clean the email input
+        const cleanEmail = emailInput.value.trim().toLowerCase();
+        if(!cleanEmail) return showToast("Please enter an email", "error");
+
+        sendBtn.innerText = "Processing...";
+        sendBtn.disabled = true;
+
+        try {
+            const res = await fetch(`${API_URL}${(mode === 'reg' ? '/send_verification' : '/forgot_password')}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ email: cleanEmail })
+            });
+            const result = await res.json();
+            
+            if(res.ok) {
+                showToast("Check your Gmail!");
+                verifyBox.style.display = 'block'; 
+                emailInput.readOnly = true;
+                sendBtn.innerText = "Sent";
+                sendBtn.style.background = "#ddd";
+            } else {
+                showToast(result.message, "error");
+                sendBtn.innerText = "Retry";
+                sendBtn.disabled = false;
+                verifyBox.style.display = 'block';
+            }
+        } catch(e) { 
+            showToast("Server Error! Check app.py", "error"); 
+            sendBtn.innerText = "Error";
+            sendBtn.disabled = false;
+            verifyBox.style.display = 'block';
+        }
+    }
+
+    async function handleRegister() {
+        const data = {
+            name: document.getElementById('regName').value.trim(),
+            email: document.getElementById('regEmail').value.trim().toLowerCase(),
+            verification_code: document.getElementById('regCode').value.trim(),
+            phone: document.getElementById('regPhone').value.trim(),
+            address: document.getElementById('regAddress').value.trim() || "No address",
+            password: document.getElementById('regPass').value.trim()
+        };
+        
+        if(!data.verification_code) return showToast("Enter the 6-digit code", "error");
+
+        try {
+            const res = await fetch(`${API_URL}/register`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            if(res.ok) { 
+                showToast("Success! Please log in."); 
+                toggleAuth('login'); 
+            } else { 
+                const err = await res.json();
+                showToast(err.message, "error"); 
+            }
+        } catch(e) { showToast("Backend Connection Error", "error"); }
+    }
+
+    async function handleLogin() {
+        const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+        const password = document.getElementById('loginPass').value.trim();
+        
+        if(!email || !password) return showToast("Enter details", "error");
+
+        try {
+            const res = await fetch(`${API_URL}/login`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ email: email, password: password })
+            });
+            const result = await res.json();
+            if(res.ok) {
+                // Ensure result.user exists before saving
+                const userData = result.user || { email: email };
+                localStorage.setItem('oxela_user', JSON.stringify(userData));
+                showToast("Welcome back!");
+                setTimeout(() => { window.location.href = "home.html"; }, 1000);
+            } else {
+                showToast(result.message, "error");
+            }
+        } catch(e) { showToast("Connection failed", "error"); }
+    }
+
+    window.onload = () => {
+        const stored = localStorage.getItem('oxela_user');
+        if(stored) {
+            const user = JSON.parse(stored);
+            const greeting = document.getElementById('userGreeting');
+            greeting.style.display = 'block';
+            // Fallback to "User" if name property is missing
+            greeting.innerText = "👤 " + (user.name || user.full_name || "User");
+        }
+    };
+   
+</script>
+</body>
+</html>

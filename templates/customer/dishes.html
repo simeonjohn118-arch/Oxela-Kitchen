@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O'XELA KITCHEN | Menu</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="manifest" href="/manifest.json">
+    <style>
+        :root {
+            --oxela-orange: #e67e22;
+            --oxela-dark: #d35400;
+            --bg-light: #fcfcfc;
+            --disabled: #bdc3c7;
+            --promo-red: #e74c3c;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: var(--bg-light); padding-bottom: 90px; color: #333; }
+
+        /* --- HEADER --- */
+        .header {
+            background: white; padding: 15px 20px; display: flex; align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000;
+        }
+        .back-btn { text-decoration: none; color: var(--oxela-orange); font-size: 1.5rem; margin-right: 15px; font-weight: bold; }
+        
+        /* --- SEARCH --- */
+        .search-container { padding: 15px 20px; background: white; }
+        .search-bar {
+            width: 100%; padding: 12px 20px; border-radius: 25px; border: 1px solid #ddd;
+            outline: none; font-size: 0.9rem; transition: 0.3s;
+        }
+        .search-bar:focus { border-color: var(--oxela-orange); box-shadow: 0 0 8px rgba(230, 126, 34, 0.2); }
+
+        /* --- GRID --- */
+        .dishes-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr);
+            gap: 15px; padding: 15px;
+        }
+        .dish-card {
+            background: white; border-radius: 20px; padding: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04); border: 1px solid #f0f0f0;
+            text-align: center; position: relative;
+        }
+        .dish-card img { width: 100%; height: 120px; object-fit: cover; border-radius: 15px; margin-bottom: 10px; }
+        
+        .dish-card.sold-out img { filter: grayscale(1); opacity: 0.5; }
+        .sold-out-badge { 
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; 
+            border-radius: 5px; font-size: 0.7rem; font-weight: bold;
+        }
+
+        .dish-card h3 { font-size: 0.85rem; margin-bottom: 5px; height: 35px; overflow: hidden; }
+        
+        .price-wrapper { margin-bottom: 10px; }
+        .dish-card .price { color: var(--oxela-orange); font-weight: 800; font-size: 0.95rem; }
+        .old-price { 
+            text-decoration: line-through; 
+            color: #aaa; 
+            font-size: 0.75rem; 
+            margin-right: 5px; 
+            font-weight: normal;
+        }
+        
+        .select-btn {
+            width: 100%; padding: 10px; background: var(--oxela-orange);
+            color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer;
+        }
+        .select-btn:disabled { background: var(--disabled); cursor: not-allowed; }
+
+        /* --- MODAL --- */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center;
+        }
+        .modal-content { background: white; width: 90%; max-width: 400px; padding: 25px; border-radius: 25px; max-height: 90vh; overflow-y: auto; }
+        .selection-group { margin-top: 15px; text-align: left; }
+        .selection-group label { display: block; font-size: 0.8rem; font-weight: bold; margin-bottom: 5px; color: #666; }
+        .selection-group select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #eee; background: #f9f9f9; }
+        .modal-footer { display: flex; gap: 10px; margin-top: 25px; }
+        .btn-confirm { flex: 2; padding: 15px; background: var(--oxela-orange); color: white; border: none; border-radius: 12px; font-weight: bold; }
+        .btn-cancel { flex: 1; padding: 15px; background: #eee; border: none; border-radius: 12px; }
+
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; height: 70px;
+            background: white; display: flex; justify-content: space-around;
+            align-items: center; border-top: 1px solid #eee; z-index: 1000;
+        }
+        .nav-link { text-decoration: none; color: #bbb; display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; }
+        .nav-link.active { color: var(--oxela-orange); }
+
+        #customAlert {
+            position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
+            background: #1a1a1a; color: white; padding: 12px 20px; border-radius: 12px;
+            transition: all 0.5s; display: flex; align-items: center; gap: 12px; z-index: 10000;
+        }
+        #customAlert.show { bottom: 85px; }
+        .alert-dot { width: 10px; height: 10px; border-radius: 50%; }
+        #swallowListContainer {
+    background: transparent !important;
+    border: none !important;
+    padding: 5px 0 !important;
+}
+
+.swallow-row {
+    background: white;
+    margin-bottom: 10px;
+    padding: 15px;
+    border-radius: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border: 1px solid #f0f0f0;
+    transition: transform 0.2s;
+}
+
+.swallow-row:active {
+    transform: scale(0.98);
+}
+
+.swallow-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.swallow-name {
+    font-weight: 700;
+    color: #2d3436;
+    font-size: 1rem;
+}
+
+.swallow-price {
+    font-size: 0.8rem;
+    color: var(--oxela-orange);
+    font-weight: 600;
+}
+
+.counter-controls {
+    background: #f8f9fa;
+    padding: 5px;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.counter-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: white;
+    color: var(--oxela-dark);
+    font-weight: bold;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.swallow-qty {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #2d3436;
+    min-width: 25px;
+    text-align: center;
+}
+/* Add this to your dishes.html <style> or CSS file */
+.dish-card.sold-out {
+    filter: grayscale(1); /* Makes the whole card gray */
+    opacity: 0.6;
+    pointer-events: none; /* Prevents clicking anywhere on the card */
+}
+
+.sold-out-badge {
+    background: #ff4757;
+    color: white;
+    padding: 5px 10px;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <a href="home.html" class="back-btn">←</a>
+        <h1 style="font-size: 1.1rem;">O'Xela Menu</h1>
+    </header>
+
+    <div class="search-container">
+        <input type="text" id="menuSearch" class="search-bar" placeholder="Search rice, swallow, soups..." onkeyup="searchMenu()">
+    </div>
+
+    <main class="dishes-grid" id="dishesContainer">
+        <p style="grid-column: span 2; text-align: center; padding: 20px;">Loading delicious meals...</p>
+    </main>
+
+   <div id="comboModal" class="modal-overlay">
+    <div class="modal-content">
+        <h2 id="mName">Dish Name</h2>
+        <p id="mPrice" style="font-size: 0.9rem; color: var(--oxela-orange); font-weight: bold;"></p>
+        
+       <div class="selection-group">
+    <label>Select Protein(s)</label>
+    <div id="proteinPick"></div> 
+</div>
+
+        <div class="selection-group" id="swallowBox" style="display:none; margin-top: 15px;">
+            <label>Add Swallow Wraps</label>
+            <div id="swallowListContainer" style="background: #f9f9f9; padding: 10px; border-radius: 12px; border: 1px solid #eee;">
+                </div>
+        </div>
+
+        <div class="selection-group" style="margin-top: 15px;">
+            <label>How many plates?</label>
+            <select id="qtyPick" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #eee;">
+                <option value="1">1 Plate</option>
+                <option value="2">2 Plates</option>
+                <option value="3">3 Plates</option>
+                <option value="4">4 Plates</option>
+                <option value="5">5 Plates</option>
+            </select>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+            <button class="btn-confirm" onclick="processSelection()">Add to Cart</button>
+        </div>
+    </div>
+</div>
+
+    <nav class="bottom-nav">
+        <a href="home.html" class="nav-link"><span>🏠</span><span>Home</span></a>
+        <a href="orders.html" class="nav-link"><span>🛒</span><span>Orders</span></a>
+        <a href="dishes.html" class="nav-link active"><span>🍽️</span><span>Dishes</span></a>
+        <a href="snacks.html" class="nav-link"><span>🍿</span><span>Snacks</span></a>
+        <a href="profile.html" class="nav-link"><span>👤</span><span>Profile</span></a>
+    </nav>
+
+    <div id="customAlert">
+        <div class="alert-dot" id="alertDot"></div>
+        <span id="alertMessage">Notification Message</span>
+    </div>
+
+  <script>
+  const API_URL = window.location.origin;
+let fullMenu = []; 
+let selectedDish = null;
+let currentSwallowQty = 0; 
+let proteinQuantities = {}; 
+
+// --- GLOBAL PROMO CONFIGURATION ---
+// Note: This now acts as a MASTER SWITCH. 
+// If active is true, it will calculate percentages based on your Master App settings.
+const GLOBAL_PROMO = {
+    active: true,      
+    emoji: "🔥"        
+};
+
+async function fetchMenuFromDB() {
+    try {
+        const response = await fetch(`${API_URL}/get_menu`);
+        if (!response.ok) throw new Error("Network response was not ok");
+        
+        fullMenu = await response.json();
+        console.log("Data Received:", fullMenu); 
+
+        const mainItems = fullMenu.filter(item => 
+            item.category === "Main Dish" || item.category === "Dishes"
+        );
+        
+        renderMenu(mainItems);
+    } catch (err) {
+        console.error("Fetch error:", err);
+        document.getElementById('dishesContainer').innerHTML = "<p style='text-align:center;'>Connection timed out. Please refresh.</p>";
+    }
+}
+
+function renderMenu(items) {
+    const container = document.getElementById('dishesContainer');
+    if(!items || items.length === 0) {
+        container.innerHTML = "<p style='grid-column: span 2; text-align: center;'>No dishes available.</p>";
+        return;
+    }
+
+    container.innerHTML = items.map(item => {
+        const isOutOfStock = (item.quantity !== undefined && Number(item.quantity) <= 0);
+        const isManualSoldOut = (item.status && item.status.trim().toLowerCase() === "sold out");
+        const isUnavailable = isOutOfStock || isManualSoldOut;
+
+        // --- DYNAMIC PERCENTAGE CALCULATION FROM DATABASE ---
+        const originalPrice = Number(item.price);
+        const dbPromoPrice = Number(item.promo_price || 0);
+        
+        let displayPrice = originalPrice;
+        let isPromoActive = false;
+        let calculatedPercent = 0;
+
+        // Check if there is a promo price set in the Master App/Database
+        if (dbPromoPrice > 0 && dbPromoPrice < originalPrice) {
+            displayPrice = dbPromoPrice;
+            isPromoActive = true;
+            // This calculates the EXACT percentage you set in the Master App
+            calculatedPercent = Math.round(((originalPrice - dbPromoPrice) / originalPrice) * 100);
+        }
+
+        const foodImage = item.image || 'https://via.placeholder.com/150';
+
+        return `
+            <div class="dish-card ${isUnavailable ? 'sold-out' : ''}">
+                ${isUnavailable ? '<div class="sold-out-badge">SOLD OUT</div>' : ''}
+                ${isPromoActive && !isUnavailable ? `<div class="promo-tag" style="position: absolute; top: 10px; left: 10px; background: #ff4757; color: white; padding: 4px 8px; border-radius: 5px; font-size: 0.75rem; font-weight: bold; z-index: 10;">PROMO ${calculatedPercent}% OFF</div>` : ''}
+                
+                <img src="${foodImage}" alt="${item.name}">
+                <h3>${item.name} ${isPromoActive ? GLOBAL_PROMO.emoji : ''}</h3>
+                
+                <div class="price-wrapper">
+                    ${isPromoActive 
+                        ? `<p class="price" style="color: #ff4757;">₦${Number(displayPrice).toLocaleString()} <span style="text-decoration: line-through; color: #888; font-size: 0.85rem; font-weight: 400; margin-left: 5px;">₦${originalPrice.toLocaleString()}</span></p>` 
+                        : `<p class="price">₦${originalPrice.toLocaleString()}</p>`
+                    }
+                    ${!isUnavailable ? `<small style="color:#666; display:block;">In Stock: ${item.quantity}</small>` : ''}
+                </div>
+                
+                <button class="select-btn" 
+                        onclick="openModal('${item.id}')" 
+                        ${isUnavailable ? 'disabled' : ''}>
+                    ${isUnavailable ? 'Sold Out' : 'Order Combo'}
+                </button>
+            </div>
+        `;
+    }).join('');
+}
+
+function openModal(id) {
+    try {
+        selectedDish = fullMenu.find(i => String(i.id) === String(id));
+        if (!selectedDish) {
+            console.error("Dish not found for ID:", id);
+            return;
+        }
+
+        currentSwallowQty = 0; 
+        proteinQuantities = {}; 
+        
+        const wrapDisplay = document.getElementById('swallowWrapCount');
+        if (wrapDisplay) wrapDisplay.innerText = "0";
+
+        // Apply dynamic price to Modal
+        const originalPrice = Number(selectedDish.price);
+        const dbPromoPrice = Number(selectedDish.promo_price || 0);
+        let basePrice = (dbPromoPrice > 0 && dbPromoPrice < originalPrice) ? dbPromoPrice : originalPrice;
+
+        document.getElementById('mName').innerText = selectedDish.name;
+        document.getElementById('mPrice').innerText = "Base: ₦" + Number(basePrice).toLocaleString();
+        
+        const proteinPick = document.getElementById('proteinPick');
+        if (!proteinPick) throw new Error("Missing proteinPick element in HTML");
+
+        const proteins = fullMenu.filter(p => 
+            p.category && p.category.trim().toLowerCase() === "side/protein"
+        );
+
+        if (proteins.length > 0) {
+            proteinPick.innerHTML = proteins.map(p => {
+                proteinQuantities[p.name] = { price: Number(p.price), qty: 0 };
+                const cleanId = p.name.replace(/\s+/g, '');
+                return `
+                    <div class="swallow-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 10px; background: #fff; border-radius: 10px; border: 1px solid #eee;">
+                        <div class="swallow-info">
+                            <span style="font-weight:700; color:#2d3436; display:block;">${p.name}</span>
+                            <span style="font-size:0.8rem; color:var(--oxela-orange); font-weight:600;">+₦${Number(p.price).toLocaleString()}</span>
+                        </div>
+                        <div class="counter-controls" style="background: #f8f9fa; padding: 5px; border-radius: 50px; display: flex; align-items: center; gap: 12px;">
+                            <button type="button" class="counter-btn" onclick="updateProteinQty('${p.name}', -1)" style="width:28px; height:28px; border-radius:50%; border:none; background:white; cursor:pointer; font-weight:bold;">-</button>
+                            <span id="pqty-${cleanId}" style="font-weight:800; min-width:20px; text-align:center;">0</span>
+                            <button type="button" class="counter-btn" onclick="updateProteinQty('${p.name}', 1)" style="width:28px; height:28px; border-radius:50%; border:none; background:white; cursor:pointer; font-weight:bold;">+</button>
+                        </div>
+                    </div>`;
+            }).join('');
+        } else {
+            proteinPick.innerHTML = "<p style='font-size:0.8rem; color:#888; text-align:center;'>No proteins available.</p>";
+        }
+
+        const dishName = selectedDish.name.toLowerCase();
+        const isSoup = ["soup", "egusi", "okra", "okro", "ogbono", "efo", "stew", "ila", "abula", "amala", "ewedu"].some(k => dishName.includes(k));
+        const swallowBox = document.getElementById('swallowBox');
+        const swallowListContainer = document.getElementById('swallowListContainer');
+
+        if (swallowBox && swallowListContainer) {
+            if (isSoup) {
+                swallowBox.style.display = "block";
+                const swallowItems = fullMenu.filter(s => s.category === "Swallow");
+                if (swallowItems.length > 0) {
+                    swallowListContainer.innerHTML = `
+                        <div class="swallow-row" style="display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px; border-radius: 15px; border: 1px solid #f0f0f0;">
+                            <div class="swallow-info" style="flex: 1;">
+                                <select id="swallowDropdown" style="width: 100%; border: none; font-weight: 600; outline: none; color: #2d3436;">
+                                    ${swallowItems.map(s => `<option value="${s.name}" data-price="${s.price}">${s.name} (₦${Number(s.price).toLocaleString()}/wrap)</option>`).join('')}
+                                </select>
+                            </div>
+                            <div class="counter-controls" style="background: #f8f9fa; padding: 5px; border-radius: 50px; display: flex; align-items: center; gap: 12px; margin-left: 10px;">
+                                <button type="button" class="counter-btn" onclick="updateSwallowQty(-1)" style="width: 32px; height: 32px; border-radius: 50%; border: none; background: white; font-weight: bold; cursor: pointer;">-</button>
+                                <span class="swallow-qty" id="swallowWrapCount" style="font-weight: 800; min-width: 20px; text-align: center;">0</span>
+                                <button type="button" class="counter-btn" onclick="updateSwallowQty(1)" style="width: 32px; height: 32px; border-radius: 50%; border: none; background: white; font-weight: bold; cursor: pointer;">+</button>
+                            </div>
+                        </div>`;
+                }
+            } else {
+                swallowBox.style.display = "none";
+            }
+        }
+        document.getElementById('comboModal').style.display = "flex";
+    } catch (err) { console.error("Modal error:", err); }
+}
+
+async function processSelection() {
+    try {
+        const qSel = document.getElementById('qtyPick');
+        const sSel = document.getElementById('swallowDropdown');
+        const overallQty = Number(qSel.value) || 1;
+
+        if (selectedDish.quantity !== undefined && overallQty > Number(selectedDish.quantity)) {
+            alert(`Sorry, we only have ${selectedDish.quantity} items left in the kitchen!`);
+            return;
+        }
+
+        const originalPrice = Number(selectedDish.price);
+        const dbPromoPrice = Number(selectedDish.promo_price || 0);
+        let base = (dbPromoPrice > 0 && dbPromoPrice < originalPrice) ? dbPromoPrice : originalPrice;
+        
+        let proteinTotal = 0;
+        let proteinDetails = [];
+
+        for (let name in proteinQuantities) {
+            if (proteinQuantities[name].qty > 0) {
+                const cost = proteinQuantities[name].qty * proteinQuantities[name].price;
+                proteinTotal += cost;
+                proteinDetails.push(`${proteinQuantities[name].qty}x ${name}`);
+            }
+        }
+
+        let swallowTotalPrice = 0;
+        let swallowText = "";
+        const swallowBox = document.getElementById('swallowBox');
+        if (swallowBox && swallowBox.style.display === "block" && currentSwallowQty > 0) {
+            const selectedSwallow = sSel.options[sSel.selectedIndex];
+            const swallowPricePerWrap = Number(selectedSwallow.getAttribute('data-price'));
+            swallowTotalPrice = currentSwallowQty * swallowPricePerWrap;
+            swallowText = ` with ${currentSwallowQty}x ${selectedSwallow.value}`;
+        }
+        
+        const total = (base + proteinTotal + swallowTotalPrice) * overallQty;
+        const proteinSummary = proteinDetails.length > 0 ? ` (${proteinDetails.join(', ')})` : " (Regular)";
+        const displayName = `${overallQty}x ${selectedDish.name}${swallowText}${proteinSummary}`;
+
+        selectedDish.quantity -= overallQty; 
+        saveToLocalStorage(displayName, total);
+        
+        if (typeof showNotification === "function") {
+            showNotification("Added to basket! 🥘");
+        }
+        
+        const currentCategory = selectedDish.category === "Snacks" ? "Snacks" : "Main Dish";
+        renderMenu(fullMenu.filter(item => item.category === currentCategory || item.category === "Dishes"));
+        
+        closeModal();
+
+        fetch(`${API_URL}/reduce_stock`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                id: selectedDish.id, 
+                reduceBy: overallQty 
+            })
+        }).catch(err => console.error("Silent background update failed:", err));
+
+    } catch (err) { 
+        console.error("Error in selection:", err); 
+    }
+}
+
+function saveToLocalStorage(name, price) {
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    cart.push({ name, price: "₦" + price.toLocaleString(), timestamp: Date.now() });
+    localStorage.setItem('cart', JSON.stringify(cart));
+}
+
+function updateProteinQty(name, change) {
+    if (!proteinQuantities[name]) return;
+    proteinQuantities[name].qty = Math.max(0, proteinQuantities[name].qty + change);
+    const cleanId = name.replace(/\s+/g, '');
+    const displayElement = document.getElementById(`pqty-${cleanId}`);
+    if (displayElement) displayElement.innerText = proteinQuantities[name].qty;
+}
+
+function updateSwallowQty(change) {
+    currentSwallowQty = Math.max(0, currentSwallowQty + change);
+    const countDisplay = document.getElementById('swallowWrapCount');
+    if (countDisplay) countDisplay.innerText = currentSwallowQty;
+}
+
+function closeModal() { document.getElementById('comboModal').style.display = "none"; }
+
+function showNotification(msg) {
+    const box = document.getElementById('customAlert');
+    if (box) {
+        document.getElementById('alertMessage').innerText = msg;
+        box.classList.add('show');
+        setTimeout(() => box.classList.remove('show'), 3000);
+    }
+}
+
+window.onload = fetchMenuFromDB;
+</script>
+</body>
+</html>

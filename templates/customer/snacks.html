@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O'XELA KITCHEN | Snacks & Drinks</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <style>
+        :root {
+            --oxela-orange: #e67e22;
+            --oxela-dark: #d35400;
+            --bg-light: #fcfcfc;
+            --disabled: #bdc3c7;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: var(--bg-light); padding-bottom: 80px; }
+
+        /* Header */
+        .header {
+            background: white; padding: 15px 20px; display: flex; align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000;
+        }
+        .back-btn { text-decoration: none; color: var(--oxela-orange); font-size: 1.5rem; margin-right: 15px; }
+        .header h1 { font-size: 1.2rem; color: var(--oxela-dark); }
+
+        /* Search Bar */
+        .search-container { padding: 15px 20px; }
+        .search-bar {
+            width: 100%; padding: 12px; border-radius: 25px; border: 1px solid #ddd;
+            outline: none; font-size: 0.9rem; background: white;
+        }
+
+        /* Snacks Grid */
+        .snacks-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            padding: 0 20px 20px 20px;
+        }
+
+        .snack-card {
+            background: white; border-radius: 15px; padding: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid #eee;
+            text-align: center; transition: 0.3s; position: relative;
+        }
+        .snack-card img { width: 100%; height: 120px; object-fit: cover; border-radius: 12px; margin-bottom: 8px; }
+        
+        /* Sold Out Effect */
+        .snack-card.sold-out img { filter: grayscale(1); opacity: 0.4; }
+        .sold-out-badge { 
+            position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
+            background: #333; color: white; padding: 4px 8px; border-radius: 5px; font-size: 0.6rem; font-weight: bold;
+        }
+
+        .snack-card h3 { font-size: 0.9rem; margin-bottom: 5px; color: #333; }
+        
+        /* --- PRICE STYLING --- */
+        .snack-card .price { color: var(--oxela-orange); font-weight: 800; font-size: 0.85rem; margin-bottom: 10px; }
+        .old-price { 
+            text-decoration: line-through; 
+            color: #aaa; 
+            font-size: 0.75rem; 
+            margin-right: 5px; 
+            font-weight: normal; 
+        }
+
+        .add-btn {
+            width: 100%; padding: 8px; background: var(--oxela-orange);
+            color: white; border: none; border-radius: 8px;
+            font-size: 0.8rem; font-weight: bold; cursor: pointer;
+        }
+        .add-btn:disabled { background: var(--disabled); cursor: not-allowed; }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; height: 65px;
+            background: white; display: flex; justify-content: space-around;
+            align-items: center; border-top: 1px solid #eee; z-index: 1000;
+        }
+        .nav-link { text-decoration: none; color: #999; display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; gap: 4px; }
+        .nav-link.active { color: var(--oxela-orange); }
+
+        /* Toast Styles */
+        #customAlert {
+            position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
+            background: #1a1a1a; color: white; padding: 12px 20px; border-radius: 12px;
+            font-weight: 500; font-size: 0.9rem; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 10000; transition: all 0.5s;
+            display: flex; align-items: center; gap: 12px; min-width: 300px;
+        }
+        #customAlert.show { bottom: 85px; }
+        .alert-dot { width: 10px; height: 10px; border-radius: 50%; }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <a href="home.html" class="back-btn">←</a>
+        <h1>Snacks & Drinks</h1>
+    </header>
+
+    <div class="search-container">
+        <input type="text" class="search-bar" placeholder="Search for pizza, cakes, or drinks..." id="searchInput" onkeyup="filterSnacks()">
+    </div>
+
+    <main class="snacks-grid" id="snacksContainer">
+        <p style="grid-column: span 2; text-align: center; padding: 20px; color: #888;">Fetching latest snacks...</p>
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="home.html" class="nav-link"><span>🏠</span><span>Home</span></a>
+        <a href="orders.html" class="nav-link"><span>🛒</span><span>Orders</span></a>
+        <a href="dishes.html" class="nav-link"><span>🍽️</span><span>Dishes</span></a>
+        <a href="snacks.html" class="nav-link active"><span>🍿</span><span>Snacks</span></a>
+        <a href="profile.html" class="nav-link"><span>👤</span><span>Profile</span></a>
+    </nav>
+
+    <div id="customAlert">
+        <div class="alert-dot" id="alertDot"></div>
+        <span id="alertMessage">Notification Message</span>
+    </div>
+
+    <script>
+   const API_URL = window.location.origin;
+let allSnacks = [];
+
+async function fetchSnacks() {
+    try {
+        const response = await fetch(`${API_URL}/get_menu`);
+        const fullMenu = await response.json();
+        allSnacks = fullMenu.filter(item => item.category === "Snacks");
+        displaySnacks(allSnacks);
+    } catch (err) {
+        console.error("Error:", err);
+        document.getElementById('snacksContainer').innerHTML = "<p style='grid-column: span 2; text-align:center;'>Unable to load snacks.</p>";
+    }
+}
+
+function displaySnacks(data) {
+    const container = document.getElementById('snacksContainer');
+    if (data.length === 0) {
+        container.innerHTML = "<p style='grid-column: span 2; text-align:center;'>No snacks available yet.</p>";
+        return;
+    }
+
+    container.innerHTML = data.map(snack => {
+        // --- INVENTORY & STATUS LOGIC ---
+        // Checks if quantity is 0 or if status is manually set to "Sold Out"
+        const isOutOfStock = (snack.quantity !== undefined && Number(snack.quantity) <= 0);
+        const isManualSoldOut = (snack.status === "Sold Out");
+        const isSoldOut = isOutOfStock || isManualSoldOut;
+        
+        // --- PROMO PRICE & DYNAMIC PERCENTAGE CALCULATION ---
+        const basePrice = Number(snack.price);
+        const promoPrice = Number(snack.promo_price || 0);
+        const onSale = promoPrice > 0 && promoPrice < basePrice;
+        const activePrice = onSale ? promoPrice : basePrice;
+
+        // Calculate the percentage difference dynamically
+        let calculatedPercent = 0;
+        if (onSale) {
+            calculatedPercent = Math.round(((basePrice - promoPrice) / basePrice) * 100);
+        }
+
+        let priceDisplay = onSale 
+            ? `<span class="old-price">₦${basePrice.toLocaleString()}</span><span>₦${promoPrice.toLocaleString()}</span>`
+            : `<span>₦${basePrice.toLocaleString()}</span>`;
+
+        return `
+            <div class="snack-card ${isSoldOut ? 'sold-out' : ''}">
+                ${isSoldOut ? '<div class="sold-out-badge">SOLD OUT</div>' : ''}
+                ${onSale && !isSoldOut ? `<div class="promo-tag" style="position: absolute; top: 10px; left: 10px; background: #ff4757; color: white; padding: 4px 8px; border-radius: 5px; font-size: 0.75rem; font-weight: bold; z-index: 10;">PROMO ${calculatedPercent}% OFF</div>` : ''}
+                
+                <img src="${snack.image || 'https://via.placeholder.com/150/e67e22/FFFFFF?text=O-Xela+Kitchen'}" alt="${snack.name}">
+                <h3>${snack.name}</h3>
+                <p class="price">${priceDisplay}</p>
+                ${!isSoldOut ? `<small style="display:block; margin-bottom:10px; color:#666;">In Stock: ${snack.quantity}</small>` : ''}
+                <button class="add-btn" 
+                        onclick="addToCart('${snack.id}', '${snack.name}', ${activePrice})"
+                        ${isSoldOut ? 'disabled' : ''}>
+                    ${isSoldOut ? 'Out of Stock' : 'Add to Cart'}
+                </button>
+            </div>
+        `;
+    }).join('');
+}
+
+function filterSnacks() {
+    const term = document.getElementById('searchInput').value.toLowerCase();
+    const filtered = allSnacks.filter(s => s.name.toLowerCase().includes(term));
+    displaySnacks(filtered);
+}
+
+// Updated addToCart to handle inventory reduction
+function addToCart(itemId, itemName, itemPrice) {
+    // 1. Find the snack in the local array to check stock
+    const snackItem = allSnacks.find(s => String(s.id) === String(itemId));
+    
+    if (snackItem && snackItem.quantity !== undefined && snackItem.quantity <= 0) {
+        showToast("Sorry, this snack just sold out!", "error");
+        return;
+    }
+
+    // 2. Update Local Storage
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    cart.push({
+        name: itemName,
+        price: "₦" + itemPrice.toLocaleString(),
+        date: new Date().toLocaleString()
+    });
+    localStorage.setItem('cart', JSON.stringify(cart));
+    
+    // 3. Immediate UI Feedback
+    showToast(itemName + " added to basket! 🍿");
+
+    // 4. Local Inventory reduction for instant UI response
+    if (snackItem) {
+        snackItem.quantity -= 1;
+        displaySnacks(allSnacks); // Re-render to show new stock/gray out
+    }
+
+    // 5. Silent Backend Update
+    fetch(`${API_URL}/reduce_stock`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            id: itemId, 
+            reduceBy: 1 
+        })
+    }).catch(err => console.error("Background stock update failed:", err));
+}
+
+function showToast(message, type = "success") {
+    const alertBox = document.getElementById('customAlert');
+    const alertText = document.getElementById('alertMessage');
+    const alertDot = document.getElementById('alertDot');
+    if(!alertBox || !alertText) return;
+
+    alertText.innerText = message;
+    alertDot.style.background = (type === "error") ? "#ff4757" : "#2ed573";
+    alertBox.classList.add('show');
+    setTimeout(() => { alertBox.classList.remove('show'); }, 3000);
+}
+
+window.onload = fetchSnacks;
+
+function loadMenu() {
+    // 1. Show old menu immediately so the screen isn't empty
+    const cachedMenu = localStorage.getItem('cached_menu');
+    if (cachedMenu) {
+        // Note: The provided script called displayDishes here, 
+        // but for snacks.html it should likely be displaySnacks.
+        // I have kept your logic but applied it to allSnacks.
+        const parsedData = JSON.parse(cachedMenu);
+        allSnacks = parsedData.filter(item => item.category === "Snacks");
+        displaySnacks(allSnacks);
+    }
+
+    // 2. Fetch the fresh menu from Render in the background
+    fetch(`${API_URL}/get_menu`)
+        .then(res => res.json())
+        .then(data => {
+            allSnacks = data.filter(item => item.category === "Snacks");
+            displaySnacks(allSnacks);
+            // 3. Update the cache for next time
+            localStorage.setItem('cached_menu', JSON.stringify(data));
+        });
+}
+    </script>
+</body>
+</html>
