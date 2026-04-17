@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>O'XELA KITCHEN | FAQ</title><link rel="icon" type="image/x-icon" href="/favicon.ico">
-<link rel="manifest" href="/manifest.json">
+    <title>O'XELA KITCHEN | FAQ</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="manifest" href="/manifest.json">
 
     <style>
         :root {
@@ -26,7 +27,6 @@
             line-height: 1.6;
         }
 
-        /* Header */
         .header {
             background: white;
             padding: 20px;
@@ -51,7 +51,6 @@
             color: var(--oxela-dark);
         }
 
-        /* Content Container */
         .container {
             padding: 20px;
             max-width: 600px;
@@ -68,7 +67,6 @@
             font-size: 0.9rem;
         }
 
-        /* FAQ Accordion */
         .faq-item {
             background: white;
             margin-bottom: 15px;
@@ -110,7 +108,7 @@
 
         .faq-item.active .faq-answer {
             padding: 0 20px 15px 20px;
-            max-height: 200px; /* Adjust as needed */
+            max-height: 500px; 
         }
 
         .faq-item.active .faq-question {
@@ -126,7 +124,6 @@
             transform: rotate(180deg);
         }
 
-        /* Contact Section */
         .contact-box {
             margin-top: 40px;
             background: #fff3e0;
@@ -154,43 +151,37 @@
             transition: 0.3s;
         }
 
-        .gmail-link:hover {
-            background: var(--oxela-dark);
-            transform: translateY(-2px);
+        #customAlert {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a1a1a;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 10000;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        /* Custom Professional Notification (Toast) */
-#customAlert {
-    position: fixed;
-    bottom: -100px; /* Hidden off-screen initially */
-    left: 50%;
-    transform: translateX(-50%);
-    background: #1a1a1a;
-    color: white;
-    padding: 12px 20px;
-    border-radius: 12px;
-    font-weight: 500;
-    font-size: 0.9rem;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    z-index: 10000;
-    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-width: 300px;
-    border: 1px solid rgba(255,255,255,0.1);
-}
 
-/* When this class is added via JS, it slides up */
-#customAlert.show {
-    bottom: 40px;
-}
+        #customAlert.show {
+            bottom: 40px;
+        }
 
-.alert-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: #ff6b6b; /* Default Accent */
-}
+        .alert-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ff6b6b;
+        }
     </style>
 </head>
 <body>
@@ -206,7 +197,6 @@
         </div>
 
         <div class="faq-list">
-            
             <div class="faq-item">
                 <button class="faq-question">
                     How do I place an order? <span class="arrow">▼</span>
@@ -251,7 +241,6 @@
                     We currently support "Pay on Delivery" and Direct Bank Transfers. Online card payment features are coming soon!
                 </div>
             </div>
-
         </div>
 
         <div class="contact-box">
@@ -262,50 +251,40 @@
             </a>
         </div>
     </main>
-<div id="customAlert">
-    <div class="alert-dot" id="alertDot"></div>
-    <span id="alertMessage">Notification Message</span>
-</div>
+
+    <div id="customAlert">
+        <div class="alert-dot" id="alertDot"></div>
+        <span id="alertMessage">Notification Message</span>
+    </div>
+
     <script>
-        // Logic to open/close the accordion items
         const faqItems = document.querySelectorAll('.faq-item');
 
         faqItems.forEach(item => {
             const question = item.querySelector('.faq-question');
             question.addEventListener('click', () => {
-                // Close other open items (Optional: remove this if you want multiple open)
                 faqItems.forEach(otherItem => {
                     if (otherItem !== item) {
                         otherItem.classList.remove('active');
                     }
                 });
-                
-                // Toggle current item
                 item.classList.toggle('active');
             });
         });
+
         function showToast(message, type = "success") {
-    const alertBox = document.getElementById('customAlert');
-    const alertText = document.getElementById('alertMessage');
-    const alertDot = document.getElementById('alertDot');
+            const alertBox = document.getElementById('customAlert');
+            const alertText = document.getElementById('alertMessage');
+            const alertDot = document.getElementById('alertDot');
 
-    alertText.innerText = message;
-    
-    // Change dot color based on type
-    if (type === "error") {
-        alertDot.style.background = "#ff4757"; // Red for errors
-    } else {
-        alertDot.style.background = "#2ed573"; // Green for success
-    }
+            alertText.innerText = message;
+            alertDot.style.background = (type === "error") ? "#ff4757" : "#2ed573";
 
-    // Show the notification
-    alertBox.classList.add('show');
-
-    // Hide it automatically after 3 seconds
-    setTimeout(() => {
-        alertBox.classList.remove('show');
-    }, 3000);
-}
+            alertBox.classList.add('show');
+            setTimeout(() => {
+                alertBox.classList.remove('show');
+            }, 3000);
+        }
     </script>
 </body>
 </html>

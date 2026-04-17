@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>O'XELA | My Profile</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
-<link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { 
             --accent: #ff6b6b; 
@@ -133,6 +134,7 @@
             box-shadow: 0 -5px 20px rgba(0,0,0,0.05); z-index: 1000;
         }
         .nav-item { text-decoration: none; color: #bbb; display: flex; flex-direction: column; align-items: center; font-size: 0.65rem; font-weight: 600; }
+        .nav-item i { font-size: 1.3rem; margin-bottom: 4px; }
         .nav-item.active { color: var(--accent); }
     </style>
 </head>
@@ -190,10 +192,10 @@
     </div>
 
     <div class="footer-nav">
-        <a href="home.html" class="nav-item">🏠<span>Home</span></a>
-        <a href="orders.html" class="nav-item">🛒<span>Order</span></a>
-        <a href="history.html" class="nav-item">📜<span>History</span></a>
-        <a href="profile.html" class="nav-item active">👤<span>Profile</span></a>
+        <a href="home.html" class="nav-item"><i class="fas fa-utensils"></i><span>Menu</span></a>
+        <a href="orders.html" class="nav-item"><i class="fas fa-receipt"></i><span>Orders</span></a>
+        <a href="special.html" class="nav-item"><i class="fas fa-star"></i><span>Special</span></a>
+        <a href="profile.html" class="nav-item active"><i class="fas fa-user"></i><span>Profile</span></a>
     </div>
 
     <script>
@@ -202,7 +204,6 @@
         async function fetchProfileData() {
             const session = JSON.parse(localStorage.getItem('oxela_user'));
             
-            // 1. Session Check
             if (!session || (!session.email && !session.user_email)) { 
                 window.location.href = 'login.html'; 
                 return; 
@@ -211,13 +212,12 @@
             const email = session.email || session.user_email;
 
             try {
-                // 2. Fetch User Details
+                // Fetch User Details
                 const userRes = await fetch(`${API_URL}/get_profile/${email}`);
                 
                 if (userRes.ok) {
                     const user = await userRes.json();
                     
-                    // Flexible mapping for different JSON key names
                     const name = user.name || user.full_name || "Foodie";
                     const phone = user.phone || user.phone_number || "Not linked";
                     const address = user.address || user.location || "No address saved";
@@ -227,11 +227,10 @@
                     document.getElementById('pPhone').innerText = phone;
                     document.getElementById('pAddress').innerText = address;
                     
-                    // Avatar Initial
                     document.getElementById('pInitial').innerText = name[0].toUpperCase();
                 }
 
-                // 3. Fetch Order Count
+                // Fetch Order Count (including Special Orders)
                 const orderRes = await fetch(`${API_URL}/user_orders/${email}`);
                 if (orderRes.ok) {
                     const orders = await orderRes.json();
@@ -240,7 +239,7 @@
 
             } catch (err) {
                 console.error("Database error:", err);
-                document.getElementById('pName').innerText = "Database Offline";
+                document.getElementById('pName').innerText = "System Offline";
             }
         }
 

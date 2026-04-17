@@ -3,118 +3,248 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>O'XELA KITCHEN | Snacks & Drinks</title>
+    <title>O'XELA KITCHEN | Snacks</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
-<link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
     <style>
         :root {
             --oxela-orange: #e67e22;
             --oxela-dark: #d35400;
             --bg-light: #fcfcfc;
             --disabled: #bdc3c7;
+            --promo-red: #e74c3c;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: var(--bg-light); padding-bottom: 80px; }
+        body { background-color: var(--bg-light); padding-bottom: 90px; color: #333; }
 
-        /* Header */
+        /* --- HEADER --- */
         .header {
             background: white; padding: 15px 20px; display: flex; align-items: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000;
         }
-        .back-btn { text-decoration: none; color: var(--oxela-orange); font-size: 1.5rem; margin-right: 15px; }
-        .header h1 { font-size: 1.2rem; color: var(--oxela-dark); }
-
-        /* Search Bar */
-        .search-container { padding: 15px 20px; }
+        .back-btn { text-decoration: none; color: var(--oxela-orange); font-size: 1.5rem; margin-right: 15px; font-weight: bold; }
+        
+        /* --- SEARCH --- */
+        .search-container { padding: 15px 20px; background: white; }
         .search-bar {
-            width: 100%; padding: 12px; border-radius: 25px; border: 1px solid #ddd;
-            outline: none; font-size: 0.9rem; background: white;
+            width: 100%; padding: 12px 20px; border-radius: 25px; border: 1px solid #ddd;
+            outline: none; font-size: 0.9rem; transition: 0.3s;
         }
+        .search-bar:focus { border-color: var(--oxela-orange); box-shadow: 0 0 8px rgba(230, 126, 34, 0.2); }
 
-        /* Snacks Grid */
-        .snacks-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            padding: 0 20px 20px 20px;
+        /* --- GRID --- */
+        .dishes-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr);
+            gap: 15px; padding: 15px;
         }
-
-        .snack-card {
-            background: white; border-radius: 15px; padding: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid #eee;
-            text-align: center; transition: 0.3s; position: relative;
+        .dish-card {
+            background: white; border-radius: 20px; padding: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04); border: 1px solid #f0f0f0;
+            text-align: center; position: relative;
         }
-        .snack-card img { width: 100%; height: 120px; object-fit: cover; border-radius: 12px; margin-bottom: 8px; }
+        .dish-card img { width: 100%; height: 120px; object-fit: cover; border-radius: 15px; margin-bottom: 10px; }
         
-        /* Sold Out Effect */
-        .snack-card.sold-out img { filter: grayscale(1); opacity: 0.4; }
+        .dish-card.sold-out img { filter: grayscale(1); opacity: 0.5; }
         .sold-out-badge { 
-            position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
-            background: #333; color: white; padding: 4px 8px; border-radius: 5px; font-size: 0.6rem; font-weight: bold;
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; 
+            border-radius: 5px; font-size: 0.7rem; font-weight: bold;
         }
 
-        .snack-card h3 { font-size: 0.9rem; margin-bottom: 5px; color: #333; }
+        .dish-card h3 { font-size: 0.85rem; margin-bottom: 5px; height: 35px; overflow: hidden; }
         
-        /* --- PRICE STYLING --- */
-        .snack-card .price { color: var(--oxela-orange); font-weight: 800; font-size: 0.85rem; margin-bottom: 10px; }
+        .price-wrapper { margin-bottom: 10px; }
+        .dish-card .price { color: var(--oxela-orange); font-weight: 800; font-size: 0.95rem; }
         .old-price { 
             text-decoration: line-through; 
             color: #aaa; 
             font-size: 0.75rem; 
             margin-right: 5px; 
-            font-weight: normal; 
+            font-weight: normal;
         }
-
-        .add-btn {
-            width: 100%; padding: 8px; background: var(--oxela-orange);
-            color: white; border: none; border-radius: 8px;
-            font-size: 0.8rem; font-weight: bold; cursor: pointer;
+        
+        .select-btn {
+            width: 100%; padding: 10px; background: var(--oxela-orange);
+            color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer;
         }
-        .add-btn:disabled { background: var(--disabled); cursor: not-allowed; }
+        .select-btn:disabled { background: var(--disabled); cursor: not-allowed; }
 
-        /* Bottom Nav */
+        /* --- MODAL --- */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center;
+        }
+        .modal-content { background: white; width: 90%; max-width: 400px; padding: 25px; border-radius: 25px; max-height: 90vh; overflow-y: auto; }
+        .selection-group { margin-top: 15px; text-align: left; }
+        .selection-group label { display: block; font-size: 0.8rem; font-weight: bold; margin-bottom: 5px; color: #666; }
+        .selection-group select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #eee; background: #f9f9f9; }
+        .modal-footer { display: flex; gap: 10px; margin-top: 25px; }
+        .btn-confirm { flex: 2; padding: 15px; background: var(--oxela-orange); color: white; border: none; border-radius: 12px; font-weight: bold; }
+        .btn-cancel { flex: 1; padding: 15px; background: #eee; border: none; border-radius: 12px; }
+
         .bottom-nav {
-            position: fixed; bottom: 0; left: 0; right: 0; height: 65px;
+            position: fixed; bottom: 0; left: 0; right: 0; height: 70px;
             background: white; display: flex; justify-content: space-around;
             align-items: center; border-top: 1px solid #eee; z-index: 1000;
         }
-        .nav-link { text-decoration: none; color: #999; display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; gap: 4px; }
+        .nav-link { text-decoration: none; color: #bbb; display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; }
         .nav-link.active { color: var(--oxela-orange); }
 
-        /* Toast Styles */
         #customAlert {
             position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
             background: #1a1a1a; color: white; padding: 12px 20px; border-radius: 12px;
-            font-weight: 500; font-size: 0.9rem; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            z-index: 10000; transition: all 0.5s;
-            display: flex; align-items: center; gap: 12px; min-width: 300px;
+            transition: all 0.5s; display: flex; align-items: center; gap: 12px; z-index: 10000;
         }
         #customAlert.show { bottom: 85px; }
         .alert-dot { width: 10px; height: 10px; border-radius: 50%; }
+        
+        #swallowListContainer {
+            background: transparent !important;
+            border: none !important;
+            padding: 5px 0 !important;
+        }
+
+        .swallow-row {
+            background: white;
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #f0f0f0;
+            transition: transform 0.2s;
+        }
+
+        .swallow-row:active {
+            transform: scale(0.98);
+        }
+
+        .swallow-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .swallow-name {
+            font-weight: 700;
+            color: #2d3436;
+            font-size: 1rem;
+        }
+
+        .swallow-price {
+            font-size: 0.8rem;
+            color: var(--oxela-orange);
+            font-weight: 600;
+        }
+
+        .counter-controls {
+            background: #f8f9fa;
+            padding: 5px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .counter-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: white;
+            color: var(--oxela-dark);
+            font-weight: bold;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .swallow-qty {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #2d3436;
+            min-width: 25px;
+            text-align: center;
+        }
+
+        .dish-card.sold-out {
+            filter: grayscale(1);
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .sold-out-badge {
+            background: #ff4757;
+            color: white;
+            padding: 5px 10px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
     <header class="header">
-        <a href="home.html" class="back-btn">←</a>
-        <h1>Snacks & Drinks</h1>
+        <a href="/home" class="back-btn">←</a>
+        <h1 style="font-size: 1.1rem;">O'Xela Snacks</h1>
     </header>
 
     <div class="search-container">
-        <input type="text" class="search-bar" placeholder="Search for pizza, cakes, or drinks..." id="searchInput" onkeyup="filterSnacks()">
+        <input type="text" id="menuSearch" class="search-bar" placeholder="Search snacks, pastries, drinks..." onkeyup="searchMenu()">
     </div>
 
-    <main class="snacks-grid" id="snacksContainer">
-        <p style="grid-column: span 2; text-align: center; padding: 20px; color: #888;">Fetching latest snacks...</p>
+    <main class="dishes-grid" id="dishesContainer">
+        <p style="grid-column: span 2; text-align: center; padding: 20px;">Loading yummy snacks...</p>
     </main>
 
+   <div id="comboModal" class="modal-overlay">
+    <div class="modal-content">
+        <h2 id="mName">Snack Name</h2>
+        <p id="mPrice" style="font-size: 0.9rem; color: var(--oxela-orange); font-weight: bold;"></p>
+        
+       <div class="selection-group">
+            <label>Add Extras (Optional)</label>
+            <div id="proteinPick"></div> 
+        </div>
+
+        <div class="selection-group" id="swallowBox" style="display:none; margin-top: 15px;">
+            <label>Add Swallow Wraps</label>
+            <div id="swallowListContainer" style="background: #f9f9f9; padding: 10px; border-radius: 12px; border: 1px solid #eee;">
+                </div>
+        </div>
+
+        <div class="selection-group" style="margin-top: 15px;">
+            <label>Quantity</label>
+            <select id="qtyPick" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #eee;">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+            <button class="btn-confirm" onclick="processSelection()">Add to Cart</button>
+        </div>
+    </div>
+</div>
+
     <nav class="bottom-nav">
-        <a href="home.html" class="nav-link"><span>🏠</span><span>Home</span></a>
-        <a href="orders.html" class="nav-link"><span>🛒</span><span>Orders</span></a>
-        <a href="dishes.html" class="nav-link"><span>🍽️</span><span>Dishes</span></a>
-        <a href="snacks.html" class="nav-link active"><span>🍿</span><span>Snacks</span></a>
-        <a href="profile.html" class="nav-link"><span>👤</span><span>Profile</span></a>
+        <a href="/home" class="nav-link"><span>🏠</span><span>Home</span></a>
+        <a href="/orders" class="nav-link"><span>🛒</span><span>Orders</span></a>
+        <a href="/dishes" class="nav-link"><span>🍽️</span><span>Dishes</span></a>
+        <a href="/snacks" class="nav-link active"><span>🍿</span><span>Snacks</span></a>
+        <a href="/profile" class="nav-link"><span>👤</span><span>Profile</span></a>
     </nav>
 
     <div id="customAlert">
@@ -122,152 +252,279 @@
         <span id="alertMessage">Notification Message</span>
     </div>
 
-    <script>
-   const API_URL = window.location.origin;
-let allSnacks = [];
+  <script>
+  const API_URL = window.location.origin;
+let fullMenu = []; 
+let selectedDish = null;
+let currentSwallowQty = 0; 
+let proteinQuantities = {}; 
 
-async function fetchSnacks() {
+const GLOBAL_PROMO = {
+    active: true,      
+    emoji: "🔥"        
+};
+
+async function fetchMenuFromDB() {
     try {
         const response = await fetch(`${API_URL}/get_menu`);
-        const fullMenu = await response.json();
-        allSnacks = fullMenu.filter(item => item.category === "Snacks");
-        displaySnacks(allSnacks);
+        if (!response.ok) throw new Error("Network response was not ok");
+        
+        fullMenu = await response.json();
+        console.log("Data Received:", fullMenu); 
+
+        // Filter for Snacks specifically for this page
+        const snackItems = fullMenu.filter(item => 
+            item.category === "Snacks" || item.category === "Snack"
+        );
+        
+        renderMenu(snackItems);
     } catch (err) {
-        console.error("Error:", err);
-        document.getElementById('snacksContainer').innerHTML = "<p style='grid-column: span 2; text-align:center;'>Unable to load snacks.</p>";
+        console.error("Fetch error:", err);
+        document.getElementById('dishesContainer').innerHTML = "<p style='text-align:center;'>Connection timed out. Please refresh.</p>";
     }
 }
 
-function displaySnacks(data) {
-    const container = document.getElementById('snacksContainer');
-    if (data.length === 0) {
-        container.innerHTML = "<p style='grid-column: span 2; text-align:center;'>No snacks available yet.</p>";
+function renderMenu(items) {
+    const container = document.getElementById('dishesContainer');
+    if(!items || items.length === 0) {
+        container.innerHTML = "<p style='grid-column: span 2; text-align: center;'>No snacks available right now.</p>";
         return;
     }
 
-    container.innerHTML = data.map(snack => {
-        // --- INVENTORY & STATUS LOGIC ---
-        // Checks if quantity is 0 or if status is manually set to "Sold Out"
-        const isOutOfStock = (snack.quantity !== undefined && Number(snack.quantity) <= 0);
-        const isManualSoldOut = (snack.status === "Sold Out");
-        const isSoldOut = isOutOfStock || isManualSoldOut;
-        
-        // --- PROMO PRICE & DYNAMIC PERCENTAGE CALCULATION ---
-        const basePrice = Number(snack.price);
-        const promoPrice = Number(snack.promo_price || 0);
-        const onSale = promoPrice > 0 && promoPrice < basePrice;
-        const activePrice = onSale ? promoPrice : basePrice;
+    container.innerHTML = items.map(item => {
+        const isOutOfStock = (item.quantity !== undefined && Number(item.quantity) <= 0);
+        const isManualSoldOut = (item.status && item.status.trim().toLowerCase() === "sold out");
+        const isUnavailable = isOutOfStock || isManualSoldOut;
 
-        // Calculate the percentage difference dynamically
+        const originalPrice = Number(item.price);
+        const dbPromoPrice = Number(item.promo_price || 0);
+        
+        let displayPrice = originalPrice;
+        let isPromoActive = false;
         let calculatedPercent = 0;
-        if (onSale) {
-            calculatedPercent = Math.round(((basePrice - promoPrice) / basePrice) * 100);
+
+        if (dbPromoPrice > 0 && dbPromoPrice < originalPrice) {
+            displayPrice = dbPromoPrice;
+            isPromoActive = true;
+            calculatedPercent = Math.round(((originalPrice - dbPromoPrice) / originalPrice) * 100);
         }
 
-        let priceDisplay = onSale 
-            ? `<span class="old-price">₦${basePrice.toLocaleString()}</span><span>₦${promoPrice.toLocaleString()}</span>`
-            : `<span>₦${basePrice.toLocaleString()}</span>`;
+        const foodImage = item.image || 'https://via.placeholder.com/150';
 
         return `
-            <div class="snack-card ${isSoldOut ? 'sold-out' : ''}">
-                ${isSoldOut ? '<div class="sold-out-badge">SOLD OUT</div>' : ''}
-                ${onSale && !isSoldOut ? `<div class="promo-tag" style="position: absolute; top: 10px; left: 10px; background: #ff4757; color: white; padding: 4px 8px; border-radius: 5px; font-size: 0.75rem; font-weight: bold; z-index: 10;">PROMO ${calculatedPercent}% OFF</div>` : ''}
+            <div class="dish-card ${isUnavailable ? 'sold-out' : ''}">
+                ${isUnavailable ? '<div class="sold-out-badge">SOLD OUT</div>' : ''}
+                ${isPromoActive && !isUnavailable ? `<div class="promo-tag" style="position: absolute; top: 10px; left: 10px; background: #ff4757; color: white; padding: 4px 8px; border-radius: 5px; font-size: 0.75rem; font-weight: bold; z-index: 10;">PROMO ${calculatedPercent}% OFF</div>` : ''}
                 
-                <img src="${snack.image || 'https://via.placeholder.com/150/e67e22/FFFFFF?text=O-Xela+Kitchen'}" alt="${snack.name}">
-                <h3>${snack.name}</h3>
-                <p class="price">${priceDisplay}</p>
-                ${!isSoldOut ? `<small style="display:block; margin-bottom:10px; color:#666;">In Stock: ${snack.quantity}</small>` : ''}
-                <button class="add-btn" 
-                        onclick="addToCart('${snack.id}', '${snack.name}', ${activePrice})"
-                        ${isSoldOut ? 'disabled' : ''}>
-                    ${isSoldOut ? 'Out of Stock' : 'Add to Cart'}
+                <img src="${foodImage}" alt="${item.name}">
+                <h3>${item.name} ${isPromoActive ? GLOBAL_PROMO.emoji : ''}</h3>
+                
+                <div class="price-wrapper">
+                    ${isPromoActive 
+                        ? `<p class="price" style="color: #ff4757;">₦${Number(displayPrice).toLocaleString()} <span style="text-decoration: line-through; color: #888; font-size: 0.85rem; font-weight: 400; margin-left: 5px;">₦${originalPrice.toLocaleString()}</span></p>` 
+                        : `<p class="price">₦${originalPrice.toLocaleString()}</p>`
+                    }
+                    ${!isUnavailable ? `<small style="color:#666; display:block;">In Stock: ${item.quantity}</small>` : ''}
+                </div>
+                
+                <button class="select-btn" 
+                        onclick="openModal('${item.id}')" 
+                        ${isUnavailable ? 'disabled' : ''}>
+                    ${isUnavailable ? 'Sold Out' : 'Order Now'}
                 </button>
             </div>
         `;
     }).join('');
 }
 
-function filterSnacks() {
-    const term = document.getElementById('searchInput').value.toLowerCase();
-    const filtered = allSnacks.filter(s => s.name.toLowerCase().includes(term));
-    displaySnacks(filtered);
+function searchMenu() {
+    const searchTerm = document.getElementById('menuSearch').value.toLowerCase();
+    const filtered = fullMenu.filter(item => 
+        (item.category === "Snacks" || item.category === "Snack") && 
+        item.name.toLowerCase().includes(searchTerm)
+    );
+    renderMenu(filtered);
 }
 
-// Updated addToCart to handle inventory reduction
-function addToCart(itemId, itemName, itemPrice) {
-    // 1. Find the snack in the local array to check stock
-    const snackItem = allSnacks.find(s => String(s.id) === String(itemId));
-    
-    if (snackItem && snackItem.quantity !== undefined && snackItem.quantity <= 0) {
-        showToast("Sorry, this snack just sold out!", "error");
-        return;
-    }
+function openModal(id) {
+    try {
+        selectedDish = fullMenu.find(i => String(i.id) === String(id));
+        if (!selectedDish) {
+            console.error("Item not found for ID:", id);
+            return;
+        }
 
-    // 2. Update Local Storage
+        currentSwallowQty = 0; 
+        proteinQuantities = {}; 
+        
+        const wrapDisplay = document.getElementById('swallowWrapCount');
+        if (wrapDisplay) wrapDisplay.innerText = "0";
+
+        const originalPrice = Number(selectedDish.price);
+        const dbPromoPrice = Number(selectedDish.promo_price || 0);
+        let basePrice = (dbPromoPrice > 0 && dbPromoPrice < originalPrice) ? dbPromoPrice : originalPrice;
+
+        document.getElementById('mName').innerText = selectedDish.name;
+        document.getElementById('mPrice').innerText = "Price: ₦" + Number(basePrice).toLocaleString();
+        
+        const proteinPick = document.getElementById('proteinPick');
+        if (!proteinPick) throw new Error("Missing proteinPick element in HTML");
+
+        const proteins = fullMenu.filter(p => 
+            p.category && p.category.trim().toLowerCase() === "side/protein"
+        );
+
+        if (proteins.length > 0) {
+            proteinPick.innerHTML = proteins.map(p => {
+                proteinQuantities[p.name] = { price: Number(p.price), qty: 0 };
+                const cleanId = p.name.replace(/\s+/g, '');
+                return `
+                    <div class="swallow-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 10px; background: #fff; border-radius: 10px; border: 1px solid #eee;">
+                        <div class="swallow-info">
+                            <span style="font-weight:700; color:#2d3436; display:block;">${p.name}</span>
+                            <span style="font-size:0.8rem; color:var(--oxela-orange); font-weight:600;">+₦${Number(p.price).toLocaleString()}</span>
+                        </div>
+                        <div class="counter-controls" style="background: #f8f9fa; padding: 5px; border-radius: 50px; display: flex; align-items: center; gap: 12px;">
+                            <button type="button" class="counter-btn" onclick="updateProteinQty('${p.name}', -1)" style="width:28px; height:28px; border-radius:50%; border:none; background:white; cursor:pointer; font-weight:bold;">-</button>
+                            <span id="pqty-${cleanId}" style="font-weight:800; min-width:20px; text-align:center;">0</span>
+                            <button type="button" class="counter-btn" onclick="updateProteinQty('${p.name}', 1)" style="width:28px; height:28px; border-radius:50%; border:none; background:white; cursor:pointer; font-weight:bold;">+</button>
+                        </div>
+                    </div>`;
+            }).join('');
+        } else {
+            proteinPick.innerHTML = "<p style='font-size:0.8rem; color:#888; text-align:center;'>No extras available.</p>";
+        }
+
+        const dishName = selectedDish.name.toLowerCase();
+        const isSoup = ["soup", "egusi", "okra", "okro", "ogbono", "efo", "stew", "ila", "abula", "amala", "ewedu"].some(k => dishName.includes(k));
+        const swallowBox = document.getElementById('swallowBox');
+        const swallowListContainer = document.getElementById('swallowListContainer');
+
+        if (swallowBox && swallowListContainer) {
+            if (isSoup) {
+                swallowBox.style.display = "block";
+                const swallowItems = fullMenu.filter(s => s.category === "Swallow");
+                if (swallowItems.length > 0) {
+                    swallowListContainer.innerHTML = `
+                        <div class="swallow-row" style="display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px; border-radius: 15px; border: 1px solid #f0f0f0;">
+                            <div class="swallow-info" style="flex: 1;">
+                                <select id="swallowDropdown" style="width: 100%; border: none; font-weight: 600; outline: none; color: #2d3436;">
+                                    ${swallowItems.map(s => `<option value="${s.name}" data-price="${s.price}">${s.name} (₦${Number(s.price).toLocaleString()}/wrap)</option>`).join('')}
+                                </select>
+                            </div>
+                            <div class="counter-controls" style="background: #f8f9fa; padding: 5px; border-radius: 50px; display: flex; align-items: center; gap: 12px; margin-left: 10px;">
+                                <button type="button" class="counter-btn" onclick="updateSwallowQty(-1)" style="width: 32px; height: 32px; border-radius: 50%; border: none; background: white; font-weight: bold; cursor: pointer;">-</button>
+                                <span class="swallow-qty" id="swallowWrapCount" style="font-weight: 800; min-width: 20px; text-align: center;">0</span>
+                                <button type="button" class="counter-btn" onclick="updateSwallowQty(1)" style="width: 32px; height: 32px; border-radius: 50%; border: none; background: white; font-weight: bold; cursor: pointer;">+</button>
+                            </div>
+                        </div>`;
+                }
+            } else {
+                swallowBox.style.display = "none";
+            }
+        }
+        document.getElementById('comboModal').style.display = "flex";
+    } catch (err) { console.error("Modal error:", err); }
+}
+
+async function processSelection() {
+    try {
+        const qSel = document.getElementById('qtyPick');
+        const sSel = document.getElementById('swallowDropdown');
+        const overallQty = Number(qSel.value) || 1;
+
+        if (selectedDish.quantity !== undefined && overallQty > Number(selectedDish.quantity)) {
+            alert(`Sorry, we only have ${selectedDish.quantity} items left!`);
+            return;
+        }
+
+        const originalPrice = Number(selectedDish.price);
+        const dbPromoPrice = Number(selectedDish.promo_price || 0);
+        let base = (dbPromoPrice > 0 && dbPromoPrice < originalPrice) ? dbPromoPrice : originalPrice;
+        
+        let proteinTotal = 0;
+        let proteinDetails = [];
+
+        for (let name in proteinQuantities) {
+            if (proteinQuantities[name].qty > 0) {
+                const cost = proteinQuantities[name].qty * proteinQuantities[name].price;
+                proteinTotal += cost;
+                proteinDetails.push(`${proteinQuantities[name].qty}x ${name}`);
+            }
+        }
+
+        let swallowTotalPrice = 0;
+        let swallowText = "";
+        const swallowBox = document.getElementById('swallowBox');
+        if (swallowBox && swallowBox.style.display === "block" && currentSwallowQty > 0) {
+            const selectedSwallow = sSel.options[sSel.selectedIndex];
+            const swallowPricePerWrap = Number(selectedSwallow.getAttribute('data-price'));
+            swallowTotalPrice = currentSwallowQty * swallowPricePerWrap;
+            swallowText = ` with ${currentSwallowQty}x ${selectedSwallow.value}`;
+        }
+        
+        const total = (base + proteinTotal + swallowTotalPrice) * overallQty;
+        const proteinSummary = proteinDetails.length > 0 ? ` (${proteinDetails.join(', ')})` : "";
+        const displayName = `${overallQty}x ${selectedDish.name}${swallowText}${proteinSummary}`;
+
+        selectedDish.quantity -= overallQty; 
+        saveToLocalStorage(displayName, total);
+        
+        if (typeof showNotification === "function") {
+            showNotification("Added to basket! 🍿");
+        }
+        
+        // Re-filter for snacks after UI update
+        renderMenu(fullMenu.filter(item => item.category === "Snacks" || item.category === "Snack"));
+        
+        closeModal();
+
+        fetch(`${API_URL}/reduce_stock`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                id: selectedDish.id, 
+                reduceBy: overallQty 
+            })
+        }).catch(err => console.error("Stock update failed:", err));
+
+    } catch (err) { 
+        console.error("Error in selection:", err); 
+    }
+}
+
+function saveToLocalStorage(name, price) {
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
-    cart.push({
-        name: itemName,
-        price: "₦" + itemPrice.toLocaleString(),
-        date: new Date().toLocaleString()
-    });
+    cart.push({ name, price: "₦" + price.toLocaleString(), timestamp: Date.now() });
     localStorage.setItem('cart', JSON.stringify(cart));
-    
-    // 3. Immediate UI Feedback
-    showToast(itemName + " added to basket! 🍿");
+}
 
-    // 4. Local Inventory reduction for instant UI response
-    if (snackItem) {
-        snackItem.quantity -= 1;
-        displaySnacks(allSnacks); // Re-render to show new stock/gray out
+function updateProteinQty(name, change) {
+    if (!proteinQuantities[name]) return;
+    proteinQuantities[name].qty = Math.max(0, proteinQuantities[name].qty + change);
+    const cleanId = name.replace(/\s+/g, '');
+    const displayElement = document.getElementById(`pqty-${cleanId}`);
+    if (displayElement) displayElement.innerText = proteinQuantities[name].qty;
+}
+
+function updateSwallowQty(change) {
+    currentSwallowQty = Math.max(0, currentSwallowQty + change);
+    const countDisplay = document.getElementById('swallowWrapCount');
+    if (countDisplay) countDisplay.innerText = currentSwallowQty;
+}
+
+function closeModal() { document.getElementById('comboModal').style.display = "none"; }
+
+function showNotification(msg) {
+    const box = document.getElementById('customAlert');
+    if (box) {
+        document.getElementById('alertMessage').innerText = msg;
+        box.classList.add('show');
+        setTimeout(() => box.classList.remove('show'), 3000);
     }
-
-    // 5. Silent Backend Update
-    fetch(`${API_URL}/reduce_stock`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-            id: itemId, 
-            reduceBy: 1 
-        })
-    }).catch(err => console.error("Background stock update failed:", err));
 }
 
-function showToast(message, type = "success") {
-    const alertBox = document.getElementById('customAlert');
-    const alertText = document.getElementById('alertMessage');
-    const alertDot = document.getElementById('alertDot');
-    if(!alertBox || !alertText) return;
-
-    alertText.innerText = message;
-    alertDot.style.background = (type === "error") ? "#ff4757" : "#2ed573";
-    alertBox.classList.add('show');
-    setTimeout(() => { alertBox.classList.remove('show'); }, 3000);
-}
-
-window.onload = fetchSnacks;
-
-function loadMenu() {
-    // 1. Show old menu immediately so the screen isn't empty
-    const cachedMenu = localStorage.getItem('cached_menu');
-    if (cachedMenu) {
-        // Note: The provided script called displayDishes here, 
-        // but for snacks.html it should likely be displaySnacks.
-        // I have kept your logic but applied it to allSnacks.
-        const parsedData = JSON.parse(cachedMenu);
-        allSnacks = parsedData.filter(item => item.category === "Snacks");
-        displaySnacks(allSnacks);
-    }
-
-    // 2. Fetch the fresh menu from Render in the background
-    fetch(`${API_URL}/get_menu`)
-        .then(res => res.json())
-        .then(data => {
-            allSnacks = data.filter(item => item.category === "Snacks");
-            displaySnacks(allSnacks);
-            // 3. Update the cache for next time
-            localStorage.setItem('cached_menu', JSON.stringify(data));
-        });
-}
-    </script>
+window.onload = fetchMenuFromDB;
+</script>
 </body>
 </html>

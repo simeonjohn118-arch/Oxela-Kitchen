@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Special Orders | O'xela Kitchen</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
-<link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
@@ -106,12 +106,14 @@
         .chat-link { color: var(--brand-red); font-size: 0.75rem; font-weight: 700; cursor: pointer; text-decoration: underline; margin-top: 10px; display: inline-block; }
 
         #customAlert { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 10px 20px; border-radius: 30px; z-index: 10000; display: none; font-size: 0.8rem; }
+        
+        .section-header { display: flex; justify-content: space-between; align-items: center; padding: 0 5px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
 <div class="top-nav">
-    <div class="orders.html" onclick="handleBack()"><i class="fas fa-arrow-left"></i></div>
+    <div class="back-btn" onclick="handleBack()"><i class="fas fa-arrow-left"></i></div>
     <div class="page-title" id="navTitle">Special Orders</div>
     <div style="width: 40px;"></div>
 </div>
@@ -140,7 +142,7 @@
 
     <div id="chatInterface">
         <div id="chatHeader">
-            <div class="special.html" onclick="handleBack()"><i class="fas fa-arrow-left"></i></div>
+            <div class="back-btn" style="color:white; padding:0;" onclick="handleBack()"><i class="fas fa-arrow-left"></i></div>
             <span><i class="fas fa-user-tie"></i> O'xela Kitchen Admin</span>
             <small id="activeOrderId">#SP-000</small>
         </div>
@@ -161,14 +163,14 @@
 <div class="bottom-nav">
     <a href="home.html" class="nav-item"><i class="fas fa-utensils"></i><span>Menu</span></a>
     <a href="orders.html" class="nav-item"><i class="fas fa-receipt"></i><span>Orders</span></a>
-    <a href="special_orders.html" class="nav-item active"><i class="fas fa-star"></i><span>Special</span></a>
+    <a href="special.html" class="nav-item active"><i class="fas fa-star"></i><span>Special</span></a>
     <a href="profile.html" class="nav-item"><i class="fas fa-user"></i><span>Profile</span></a>
 </div>
 
 <div id="customAlert"></div>
 
 <script>
- const API_URL = window.location.origin;
+    const API_URL = window.location.origin;
     let currentChatOrder = null;
 
     function showToast(msg) {
@@ -259,7 +261,6 @@
         input.value = "";
         box.scrollTop = box.scrollHeight;
         
-        // This is where you'd update your database with the new message
         showToast("Message sent to Admin");
     }
 

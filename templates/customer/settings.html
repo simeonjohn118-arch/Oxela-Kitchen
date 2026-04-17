@@ -5,33 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>O'XELA KITCHEN | Settings</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
-<link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <div class="setting-item" onclick="logoutUser()">
-    <div class="item-info">
-        <h3 style="color: #e74c3c;">Logout</h3>
-        <p>Sign out of your account safely</p>
-    </div>
-    <span>❯</span>
-</div>
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
     <style>
         :root {
             --oxela-orange: #e67e22;
             --oxela-dark: #d35400;
             --bg-light: #f8f9fa;
+            --danger: #e74c3c;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-light);
-            color: #333;
-            padding-bottom: 30px;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: var(--bg-light); color: #333; padding-bottom: 30px; }
 
         /* Header */
         .header {
@@ -51,14 +35,10 @@
             font-size: 1.2rem;
             margin-right: 15px;
             font-weight: bold;
+            cursor: pointer;
         }
 
-        /* Settings Container */
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+        .container { max-width: 500px; margin: 0 auto; padding: 20px; }
 
         .settings-group {
             background: white;
@@ -87,121 +67,63 @@
             transition: 0.2s;
         }
 
-        .setting-item:last-child {
-            border-bottom: none;
-        }
+        .setting-item:last-child { border-bottom: none; }
+        .setting-item:hover { background-color: #fffaf5; }
 
-        .setting-item:hover {
-            background-color: #fffaf5;
-        }
+        .item-info h3 { font-size: 0.95rem; font-weight: 600; color: #333; }
+        .item-info p { font-size: 0.75rem; color: #888; }
 
-        .item-info h3 {
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .item-info p {
-            font-size: 0.75rem;
-            color: #888;
-        }
-
-        /* Toggle Switch Styling */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 40px;
-            height: 20px;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
+        /* Toggle Switch */
+        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
-            position: absolute;
-            cursor: pointer;
+            position: absolute; cursor: pointer;
             top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 20px;
+            background-color: #ccc; transition: .4s; border-radius: 20px;
         }
-
         .slider:before {
-            position: absolute;
-            content: "";
-            height: 14px; width: 14px;
-            left: 3px; bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
+            position: absolute; content: "";
+            height: 14px; width: 14px; left: 3px; bottom: 3px;
+            background-color: white; transition: .4s; border-radius: 50%;
         }
+        input:checked + .slider { background-color: var(--oxela-orange); }
+        input:checked + .slider:before { transform: translateX(20px); }
 
-        input:checked + .slider {
-            background-color: var(--oxela-orange);
+        /* Toast Styling */
+        #customAlert {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a1a1a;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 10000;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 280px;
+            border: 1px solid rgba(255,255,255,0.1);
         }
+        #customAlert.show { bottom: 40px; }
+        .alert-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--oxela-orange); }
 
-        input:checked + .slider:before {
-            transform: translateX(20px);
-        }
-
-        .danger-zone {
-            color: #e74c3c;
-            font-weight: bold;
-        }
-
-        .version-text {
-            text-align: center;
-            font-size: 0.75rem;
-            color: #bbb;
-            margin-top: 20px;
-        }
-        /* Custom Professional Notification (Toast) */
-#customAlert {
-    position: fixed;
-    bottom: -100px; /* Hidden off-screen initially */
-    left: 50%;
-    transform: translateX(-50%);
-    background: #1a1a1a;
-    color: white;
-    padding: 12px 20px;
-    border-radius: 12px;
-    font-weight: 500;
-    font-size: 0.9rem;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    z-index: 10000;
-    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-width: 300px;
-    border: 1px solid rgba(255,255,255,0.1);
-}
-
-/* When this class is added via JS, it slides up */
-#customAlert.show {
-    bottom: 40px;
-}
-
-.alert-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: #ff6b6b; /* Default Accent */
-}
+        .version-text { text-align: center; font-size: 0.75rem; color: #bbb; margin-top: 20px; }
     </style>
 </head>
 <body>
 
     <header class="header">
-        <a href="home.html" class="back-btn">←</a>
+        <div onclick="window.history.back()" class="back-btn">←</div>
         <h1 style="font-size: 1.1rem;">Settings</h1>
     </header>
 
     <main class="container">
-        
         <div class="group-title">Account & Security</div>
         <div class="settings-group">
             <div class="setting-item" onclick="location.href='profile.html'">
@@ -211,40 +133,9 @@
                 </div>
                 <span>❯</span>
             </div>
-            <div class="setting-item">
-                <div class="item-info">
-                    <h3>Change Password</h3>
-                    <p>Update your login security</p>
-                </div>
-                <span>❯</span>
-            </div>
         </div>
 
-        <div class="group-title">Preferences</div>
-        <div class="settings-group">
-            <div class="setting-item">
-                <div class="item-info">
-                    <h3>Order Notifications</h3>
-                    <p>Get alerts when food is ready</p>
-                </div>
-                <label class="switch">
-                    <input type="checkbox" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="setting-item">
-                <div class="item-info">
-                    <h3>Promotional SMS</h3>
-                    <p>Receive discounts and weekly deals</p>
-                </div>
-                <label class="switch">
-                    <input type="checkbox">
-                    <span class="slider"></span>
-                </label>
-            </div>
-        </div>
-
-        <div class="group-title">App Settings</div>
+        <div class="group-title">App Preferences</div>
         <div class="settings-group">
             <div class="setting-item">
                 <div class="item-info">
@@ -259,7 +150,7 @@
             <div class="setting-item" onclick="clearAppData()">
                 <div class="item-info">
                     <h3>Clear Cache</h3>
-                    <p>Reset local app data</p>
+                    <p>Reset local app data and cart</p>
                 </div>
                 <span>❯</span>
             </div>
@@ -267,84 +158,71 @@
 
         <div class="group-title">Danger Zone</div>
         <div class="settings-group">
+            <div class="setting-item" onclick="logoutUser()">
+                <div class="item-info">
+                    <h3 style="color: var(--danger);">Logout</h3>
+                    <p>Sign out of O'XELA KITCHEN</p>
+                </div>
+                <span>❯</span>
+            </div>
             <div class="setting-item" onclick="deleteAccount()">
                 <div class="item-info">
-                    <h3 class="danger-zone">Delete Account</h3>
-                    <p>Permanently remove your O'xela account</p>
+                    <h3 style="color: var(--danger);">Delete Account</h3>
+                    <p>Permanently remove your account</p>
                 </div>
+                <span>❯</span>
             </div>
         </div>
 
         <p class="version-text">O'xela Kitchen App v1.0.4<br>Build: 2026-Focus</p>
     </main>
-<div id="customAlert">
-    <div class="alert-dot" id="alertDot"></div>
-    <span id="alertMessage">Notification Message</span>
-</div>
+
+    <div id="customAlert">
+        <div class="alert-dot" id="alertDot"></div>
+        <span id="alertMessage">Notification</span>
+    </div>
+
     <script>
-        // 1. CLEAR APP DATA (ROBUST FEATURE)
+        function showToast(message, type = "success") {
+            const alertBox = document.getElementById('customAlert');
+            const alertText = document.getElementById('alertMessage');
+            const alertDot = document.getElementById('alertDot');
+            alertText.innerText = message;
+            alertDot.style.background = type === "error" ? "#ff4757" : "#2ed573";
+            alertBox.classList.add('show');
+            setTimeout(() => alertBox.classList.remove('show'), 3000);
+        }
+
         function clearAppData() {
-            if(confirm("This will clear your cart and temporary data. Proceed?")) {
+            if(confirm("Clear cart and temporary data?")) {
                 localStorage.removeItem('cart');
-                alert("Cache cleared successfully!");
-                location.reload();
+                showToast("Cache cleared successfully!");
+                setTimeout(() => location.reload(), 1500);
             }
         }
 
-        // 2. DELETE ACCOUNT (ROBUST FEATURE)
+        function logoutUser() {
+            if (confirm("Log out of O'XELA KITCHEN?")) {
+                localStorage.removeItem('currentUser'); 
+                localStorage.removeItem('oxela_user');
+                window.location.href = "index.html";
+            }
+        }
+
         function deleteAccount() {
-            if(confirm("Are you ABSOLUTELY sure? This cannot be undone. All your order history will be lost.")) {
-                // Here you would normally call your Python backend to delete the user from users.json
-                alert("Account removal request sent to O'xela Admin.");
+            if(confirm("Permanently delete account? This cannot be undone.")) {
+                showToast("Account removal request sent.", "error");
                 localStorage.clear();
-                window.location.href = 'index.html';
+                setTimeout(() => window.location.href = 'index.html', 2000);
             }
         }
 
-        // 3. DARK MODE TOGGLE (UI ONLY FOR NOW)
         document.getElementById('darkModeToggle').addEventListener('change', function() {
             if(this.checked) {
-                alert("Dark Mode feature is being prepared for the next update!");
-                this.checked = false;
+                showToast("Dark Mode coming in next update!", "success");
+                setTimeout(() => this.checked = false, 1000);
             }
         });
-        function logoutUser() {
-    // 1. Ask for confirmation (Professional touch)
-    if (confirm("Are you sure you want to log out of O'XELA KITCHEN?")) {
-        
-        // 2. Clear the specific user data from the browser's memory
-        localStorage.removeItem('currentUser'); 
-        
-        // 3. Optional: Clear the cart if you want them to start fresh next time
-        // localStorage.removeItem('cart'); 
-
-        // 4. Redirect immediately to your login page
-        window.location.href = "index.html";
-    }
-}
-function showToast(message, type = "success") {
-    const alertBox = document.getElementById('customAlert');
-    const alertText = document.getElementById('alertMessage');
-    const alertDot = document.getElementById('alertDot');
-
-    alertText.innerText = message;
-    
-    // Change dot color based on type
-    if (type === "error") {
-        alertDot.style.background = "#ff4757"; // Red for errors
-    } else {
-        alertDot.style.background = "#2ed573"; // Green for success
-    }
-
-    // Show the notification
-    alertBox.classList.add('show');
-
-    // Hide it automatically after 3 seconds
-    setTimeout(() => {
-        alertBox.classList.remove('show');
-    }, 3000);
-}
     </script>
-
 </body>
 </html>

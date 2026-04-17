@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>O'XELA | History</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
-<link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="/manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --accent: #ff6b6b; --dark: #0f172a; --bg: #f8fafc; --success: #27ae60; --warning: #f39c12; }
@@ -88,14 +88,13 @@
     </div>
 
     <div class="container" id="historyContainer">
-        </div>
+    </div>
 
     <div class="footer-nav">
         <a href="home.html" class="nav-item">
             <span class="nav-icon">🏠</span><span>Home</span>
         </a>
-        <a href="orders.html
-        " class="nav-item">
+        <a href="orders.html" class="nav-item">
             <span class="nav-icon">🛒</span><span>Order</span>
         </a>
         <a href="history.html" class="nav-item active">
@@ -142,12 +141,10 @@
 
             // Reverse to show newest first
             container.innerHTML = history.reverse().map(order => {
-                // Check status - handles both upper and lower case from DB
                 const isSuccess = order.status && order.status.toUpperCase() === 'SUCCESSFUL';
                 const statusLabel = order.status || 'PENDING';
                 const badgeClass = isSuccess ? 'badge-successful' : 'badge-pending';
 
-                // Handle item listing (Regular vs Special)
                 let itemsList = "";
                 if (order.items && Array.isArray(order.items)) {
                     itemsList = order.items.map(i => i.name).join(', ');

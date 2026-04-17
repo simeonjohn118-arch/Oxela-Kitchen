@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>O'XELA KITCHEN | Menu</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
     <style>
         :root {
             --oxela-orange: #e67e22;
@@ -192,7 +192,7 @@
 <body>
 
     <header class="header">
-        <a href="home.html" class="back-btn">←</a>
+        <a href="/home" class="back-btn">←</a>
         <h1 style="font-size: 1.1rem;">O'Xela Menu</h1>
     </header>
 
@@ -239,11 +239,11 @@
 </div>
 
     <nav class="bottom-nav">
-        <a href="home.html" class="nav-link"><span>🏠</span><span>Home</span></a>
-        <a href="orders.html" class="nav-link"><span>🛒</span><span>Orders</span></a>
-        <a href="dishes.html" class="nav-link active"><span>🍽️</span><span>Dishes</span></a>
-        <a href="snacks.html" class="nav-link"><span>🍿</span><span>Snacks</span></a>
-        <a href="profile.html" class="nav-link"><span>👤</span><span>Profile</span></a>
+        <a href="/home" class="nav-link"><span>🏠</span><span>Home</span></a>
+        <a href="/orders" class="nav-link"><span>🛒</span><span>Orders</span></a>
+        <a href="/dishes" class="nav-link active"><span>🍽️</span><span>Dishes</span></a>
+        <a href="/snacks" class="nav-link"><span>🍿</span><span>Snacks</span></a>
+        <a href="/profile" class="nav-link"><span>👤</span><span>Profile</span></a>
     </nav>
 
     <div id="customAlert">
@@ -259,8 +259,6 @@ let currentSwallowQty = 0;
 let proteinQuantities = {}; 
 
 // --- GLOBAL PROMO CONFIGURATION ---
-// Note: This now acts as a MASTER SWITCH. 
-// If active is true, it will calculate percentages based on your Master App settings.
 const GLOBAL_PROMO = {
     active: true,      
     emoji: "🔥"        
@@ -297,7 +295,6 @@ function renderMenu(items) {
         const isManualSoldOut = (item.status && item.status.trim().toLowerCase() === "sold out");
         const isUnavailable = isOutOfStock || isManualSoldOut;
 
-        // --- DYNAMIC PERCENTAGE CALCULATION FROM DATABASE ---
         const originalPrice = Number(item.price);
         const dbPromoPrice = Number(item.promo_price || 0);
         
@@ -305,11 +302,9 @@ function renderMenu(items) {
         let isPromoActive = false;
         let calculatedPercent = 0;
 
-        // Check if there is a promo price set in the Master App/Database
         if (dbPromoPrice > 0 && dbPromoPrice < originalPrice) {
             displayPrice = dbPromoPrice;
             isPromoActive = true;
-            // This calculates the EXACT percentage you set in the Master App
             calculatedPercent = Math.round(((originalPrice - dbPromoPrice) / originalPrice) * 100);
         }
 
@@ -355,7 +350,6 @@ function openModal(id) {
         const wrapDisplay = document.getElementById('swallowWrapCount');
         if (wrapDisplay) wrapDisplay.innerText = "0";
 
-        // Apply dynamic price to Modal
         const originalPrice = Number(selectedDish.price);
         const dbPromoPrice = Number(selectedDish.promo_price || 0);
         let basePrice = (dbPromoPrice > 0 && dbPromoPrice < originalPrice) ? dbPromoPrice : originalPrice;

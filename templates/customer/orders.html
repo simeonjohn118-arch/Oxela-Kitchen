@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>O'XELA | Checkout</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
-<link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --accent: #ff6b6b; --dark: #121212; --bg: #f4f7f6; --success: #27ae60; --warning: #f39c12; }
@@ -86,14 +85,14 @@
 <body>
 
     <div class="top-nav">
-        <a href="home.html" class="back-link">←</a>
+        <a href="/home" class="back-link">←</a>
         <h2 style="font-size: 1rem; font-weight: 800;">CHECKOUT</h2>
         <div class="menu-container">
             <div class="menu-icon" onclick="toggleMenu()">⋮</div>
             <div class="dropdown" id="navDropdown">
-                <a href="history.html">📜 Order History</a>
-                <a href="special.html">✨ Special Order</a>
-                <a href="home.html">🏠 Home Page</a>
+                <a href="/history">📜 Order History</a>
+                <a href="/special">✨ Special Order</a>
+                <a href="/home">🏠 Home Page</a>
             </div>
         </div>
     </div>
@@ -142,19 +141,19 @@
     </div>
 
     <div class="footer-nav">
-        <a href="home.html" class="nav-item">
+        <a href="/home" class="nav-item">
             <span class="nav-icon">🏠</span><span>Home</span>
         </a>
-        <a href="orders.html" class="nav-item active">
+        <a href="/orders" class="nav-item active">
             <span class="nav-icon">🛒</span><span>Order</span>
         </a>
-        <a href="dishes.html" class="nav-item">
+        <a href="/dishes" class="nav-item">
             <span class="nav-icon">🍽️</span><span>Dishes</span>
         </a>
-        <a href="snacks.html" class="nav-item">
+        <a href="/snacks" class="nav-item">
             <span class="nav-icon">🍿</span><span>Snacks</span>
         </a>
-        <a href="profile.html" class="nav-item">
+        <a href="/profile" class="nav-item">
             <span class="nav-icon">👤</span><span>Profile</span>
         </a>
     </div>
@@ -181,7 +180,7 @@
     </div>
 
     <script>
-   const API_URL = window.location.origin;
+    const API_URL = window.location.origin;
     const accounts = [
         { bank: "GTBank", num: "0123456789", name: "O'XELA KITCHEN" },
         { bank: "Zenith Bank", num: "1012345678", name: "O'XELA GLOBAL" },
@@ -204,7 +203,6 @@
             const data = await res.json();
             const config = data.config;
 
-            // Logic to calculate if open based on time
             const now = new Date();
             const currentTime = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
             
@@ -214,7 +212,6 @@
                 document.getElementById('closedNotice').style.display = 'block';
                 document.getElementById('submitBtn').disabled = true;
                 document.getElementById('submitBtn').innerText = "Store Closed 🔒";
-                // Optionally update notice text with actual hours
                 document.getElementById('closedNotice').innerText = `🔒 O'XELA KITCHEN is currently closed. We are open from ${config.open_time} to ${config.close_time}.`;
             }
         } catch (err) { console.log("Status Check Failed", err); }
@@ -341,7 +338,8 @@
         .then(response => response.json())
         .then(data => {
             localStorage.removeItem('cart');
-            setTimeout(() => { window.location.href = 'history.html'; }, 2000);
+            // FIXED: Redirecting to /history
+            setTimeout(() => { window.location.href = '/history'; }, 2000);
         })
         .catch(err => showToast("Sync failed. Is Python running?"));
     }

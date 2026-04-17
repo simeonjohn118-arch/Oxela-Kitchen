@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>O'XELA KITCHEN | Resolution Center</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
-<link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
     <style>
         :root {
             --oxela-orange: #e67e22;
@@ -209,7 +209,7 @@
 <body>
 
     <header class="header">
-        <a href="home.html" class="back-btn">←</a>
+        <a href="/home" class="back-btn">←</a>
         <h1 id="headerTitle" style="font-size: 1.1rem;">Submit a Complaint</h1>
     </header>
 
@@ -374,8 +374,6 @@
                 html = `<div class="msg received">Connecting to Support...</div>`;
             } else {
                 messages.forEach(m => {
-                    // Logic: If sender is Customer, bubble goes to RIGHT (sent)
-                    // If sender is Admin, bubble goes to LEFT (received)
                     const isCustomer = m.sender === "Customer";
                     const bubbleClass = isCustomer ? 'sent' : 'received';
                     
