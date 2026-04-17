@@ -612,6 +612,11 @@ def login_page():
     # This makes index.html (your login) the very first page
     return render_template('customer/index.html')
 
+@app.route('/')
+def login_page():
+    # This makes index.html (your login) the very first page
+    return render_template('master/index.html')
+
 import os
 from flask import Flask, render_template # ensure these are imported
 
