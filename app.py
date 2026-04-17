@@ -18,12 +18,22 @@ import os
 
 @app.route('/debug')
 def debug():
-    # This will list everything inside your templates folder
     try:
-        files = os.listdir('templates/customer')
-        return f"I found the customer folder! Inside are: {files}"
+        # 1. Check if 'templates' exists
+        if not os.path.exists('templates'):
+            return "ERROR: The main 'templates' folder is missing from Render!"
+        
+        # 2. Check if 'customer' exists inside it
+        customer_path = os.path.join('templates', 'customer')
+        if not os.path.exists(customer_path):
+            all_folders = os.listdir('templates')
+            return f"ERROR: 'customer' folder not found. Inside 'templates' I only see: {all_folders}"
+            
+        # 3. List the files
+        files = os.listdir(customer_path)
+        return f"SUCCESS! Inside templates/customer, I found: {files}"
     except Exception as e:
-        return f"Error: I can't even find the folder. Error message: {e}"
+        return f"SYSTEM ERROR: {str(e)}"
 # --- THE HANDSHAKE TOOL (CORS) ---
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
@@ -647,7 +657,7 @@ def handle_festive_save():  # I changed the name from 'update_festive' to 'handl
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['FESTIVE_UPLOAD_FOLDER'], filename))
             # Build URL for your Render app
-            festive_config['image_url'] = f"https://oxela-kitchen.onrender.com/static/uploads/festive/{filename}"
+            festive_config['image_url'] = f"/static/uploads/festive/{filename}"
 
     # Update text and toggle from Form Data
     festive_config['active'] = request.form.get('active') == 'true'
