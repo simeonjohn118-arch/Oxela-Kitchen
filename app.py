@@ -610,15 +610,15 @@ def get_festive_settings():
 @app.route('/')
 def login_page():
     # This makes index.html (your login) the very first page
-    return render_template('customer/index.html')
+    return render_templates('customer/index.html')
 
 @app.route('/')
 def login_page():
     # This makes index.html (your login) the very first page
-    return render_template('master/index.html')
+    return render_templates('master/index.html')
 
 import os
-from flask import Flask, render_template # ensure these are imported
+from flask import Flask, render_templates # ensure these are imported
 
 @app.route('/home')
 def customer_home():
@@ -626,7 +626,7 @@ def customer_home():
     template_path = os.path.join('templates', 'customer', 'home.html')
     if not os.path.exists(template_path):
         return f"ERROR: File not found at {template_path}. Check your folder names!", 404
-    return render_template('customer/home.html')
+    return render_templates('customer/home.html')
 
 @app.route('/admin_hub')
 def admin_hub_view():
