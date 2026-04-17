@@ -629,7 +629,7 @@ def admin_hub_view():
     if not os.path.exists(template_path):
         return f"ERROR: File not found at {template_path}. Check your folder names!", 404
     return render_template('master/admin_hub.html')
-
+    
 # Master App updates settings (with image upload)
 @app.route('/update_festive', methods=['POST'])
 def handle_festive_save():  # I changed the name from 'update_festive' to 'handle_festive_save'
