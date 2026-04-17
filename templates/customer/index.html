@@ -146,7 +146,8 @@ const API_URL = window.location.origin;
         if(!localStorage.getItem('oxela_user')) {
             document.getElementById('authOverlay').style.display = 'flex';
         } else {
-            window.location.href = "/home.";
+            // FIXED: Removed "/git home." which was causing a 404
+            window.location.href = "/home";
         }
     }
 
@@ -234,11 +235,11 @@ const API_URL = window.location.origin;
             });
             const result = await res.json();
             if(res.ok) {
-                // Ensure result.user exists before saving
                 const userData = result.user || { email: email };
                 localStorage.setItem('oxela_user', JSON.stringify(userData));
                 showToast("Welcome back!");
-                setTimeout(() => { window.location.href = "/home"; }, 1000);
+                // FIXED: Ensured clean redirect after success message
+                setTimeout(() => { window.location.href = "/home"; }, 800);
             } else {
                 showToast(result.message, "error");
             }
@@ -251,7 +252,6 @@ const API_URL = window.location.origin;
             const user = JSON.parse(stored);
             const greeting = document.getElementById('userGreeting');
             greeting.style.display = 'block';
-            // Fallback to "User" if name property is missing
             greeting.innerText = "👤 " + (user.name || user.full_name || "User");
         }
     };

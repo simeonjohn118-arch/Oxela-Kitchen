@@ -5,8 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>O'XELA KITCHEN | Home</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
-<link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-navigator.serviceWorker.register('/static/sw.js')
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/sw.js');
+        }
+    </script>
     <style>
         /* --- CSS STYLES --- */
         * {
@@ -75,7 +79,6 @@ navigator.serviceWorker.register('/static/sw.js')
         /* Hero Banner */
         .hero { padding: 15px; }
         .hero-card {
-            /* Default background - will be overridden by JS if festive is active */
             background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), 
                         url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=500&q=60');
             background-size: cover;
@@ -161,7 +164,6 @@ navigator.serviceWorker.register('/static/sw.js')
         .nav-link.active { color: #e67e22; }
         .nav-link span:first-child { font-size: 1.3rem; }
 
-        /* Custom Professional Notification (Toast) */
         #customAlert {
             position: fixed;
             bottom: -100px;
@@ -184,125 +186,113 @@ navigator.serviceWorker.register('/static/sw.js')
         }
         #customAlert.show { bottom: 40px; }
         .alert-dot { width: 10px; height: 10px; border-radius: 50%; background: #ff6b6b; }
-        /* Scrolling Ticker Styles */
-.ticker-wrap {
-    width: 100%;
-    overflow: hidden;
-    background-color: #fef5ef; /* Very light orange tint */
-    border-bottom: 1px solid #f0f0f0;
-    white-space: nowrap;
-    box-sizing: border-box;
-    padding: 8px 0;
-}
 
-.ticker-move {
-    display: inline-block;
-    padding-left: 100%; /* Start off-screen to the left */
-    animation: ticker 25s linear infinite;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #333;
-}
-
-.ticker-move span {
-    margin-right: 50px; /* Space between each message */
-    color: #333;
-}
-
-.ticker-move b {
-    color: #e67e22; /* Highlight the order details */
-}
-
-@keyframes ticker {
-    0% { transform: translate(0, 0); }
-    100% { transform: translate(-100%, 0); }
-}
+        /* Ticker Styles */
+        .ticker-wrap {
+            width: 100%;
+            overflow: hidden;
+            background-color: #fef5ef;
+            border-bottom: 1px solid #f0f0f0;
+            white-space: nowrap;
+            box-sizing: border-box;
+            padding: 8px 0;
+        }
+        .ticker-move {
+            display: inline-block;
+            padding-left: 100%;
+            animation: ticker 25s linear infinite;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #333;
+        }
+        .ticker-move span { margin-right: 50px; color: #333; }
+        .ticker-move b { color: #e67e22; }
+        @keyframes ticker {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-100%, 0); }
+        }
     </style>
 </head>
 <body>
     <div id="installBanner" style="display:none; background:#e67e22; color:white; padding:15px; text-align:center;">
-    <p>Install O'XELA App for faster ordering!</p>
-    <button id="installBtn" style="padding:10px 20px; cursor:pointer;">Download Now</button>
-</div>
+        <p>Install O'XELA App for faster ordering!</p>
+        <button id="installBtn" style="padding:10px 20px; cursor:pointer;">Download Now</button>
+    </div>
 
     <header class="top-nav">
         <div class="logo">O'XELA KITCHEN</div>
         <button class="cart-icon" onclick="toggleDropdown()">☰</button>
         
         <div id="myDropdown" class="dropdown">
-            <a href="complaints.html">Complaint</a>
-            <a href="faq.html">FAQ</a>
-            <a href="settings.html">Settings</a>
+            <a href="/complaints">Complaint</a>
+            <a href="/faq">FAQ</a>
+            <a href="/settings">Settings</a>
             <a href="#" onclick="logoutUser()" style="color: #e67e22; font-weight: bold;">Logout</a>
         </div>
     </header>
 
     <main>
-    <div class="ticker-wrap" id="tickerContainer" style="display: none;">
-    <div class="ticker-move" id="tickerText">
+        <div class="ticker-wrap" id="tickerContainer" style="display: none;">
+            <div class="ticker-move" id="tickerText"></div>
         </div>
-</div>
         <section class="hero">
             <div class="hero-card" id="mainHeroCard">
                 <h1 id="heroHeadline">Hungry?<br>Order now!</h1>
-                <button id="heroBtn" onclick="location.href='dishes.html'">View Menu</button>
+                <button id="heroBtn" onclick="location.href='/dishes'">View Menu</button>
             </div>
         </section>
 
         <div class="section-title">
             <span>Special Dishes</span>
-            <a href="dishes.html">See all</a>
+            <a href="/dishes">See all</a>
         </div>
         <div class="horizontal-container">
             <div class="food-card" onclick="window.addToCart('Jollof & Chicken', 3500)">
-                <img src="image/Jollof rice.jpeg" alt="Jollof">
+                <img src="/static/image/Jollof rice.jpeg" alt="Jollof">
                 <p>Jollof & Chicken</p>
             </div>
             <div class="food-card" onclick="window.addToCart('Egusi & Swallow', 4000)">
-                <img src="image/Pounded Yam.jpg" alt="Egusi">
+                <img src="/static/image/Pounded Yam.jpg" alt="Egusi">
                 <p>Egusi & Swallow</p>
             </div>
             <div class="food-card" onclick="window.addToCart('Fried Rice', 3200)">
-                <img src="image/Fried .jpeg" alt="Rice">
+                <img src="/static/image/Fried .jpeg" alt="Rice">
                 <p>Fried Rice</p>
             </div>
         </div>
 
         <div class="section-title">
             <span>Snacks & Drinks</span>
-            <a href="snacks.html">See all</a>
+            <a href="/snacks">See all</a>
         </div>
         <div class="horizontal-container">
             <div class="food-card" onclick="window.addToCart('Meat Pie', 800)">
-                <img src="image/Meat-pie.jpeg" alt="Meatpie">
+                <img src="/static/image/Meat-pie.jpeg" alt="Meatpie">
                 <p>Meat Pie</p>
             </div>
             <div class="food-card" onclick="window.addToCart('Chilled Zobo', 500)">
-                <img src="image/Zobbo.png" alt="Drink">
+                <img src="/static/image/Zobbo.png" alt="Drink">
                 <p>Chilled Zobo</p>
             </div>
             <div class="food-card" onclick="window.addToCart('Cupcake', 1200)">
-                <img src="image/Cup_cakes.png" alt="Cake">
+                <img src="/static/image/Cup_cakes.png" alt="Cake">
                 <p>Cupcake</p>
             </div>
         </div>
     </main>
 
     <nav class="bottom-nav">
-        <a href="home.html" class="nav-link active"><span>🏠</span><span>Home</span></a>
-        <a href="orders.html" class="nav-link"><span>🛒</span><span>Orders</span></a>
-        <a href="dishes.html" class="nav-link"><span>🍽️</span><span>Dishes</span></a>
-        <a href="snacks.html" class="nav-link"><span>🍿</span><span>Snacks</span></a>
-        <a href="profile.html" class="nav-link"><span>👤</span><span>Profile</span></a>
+        <a href="/home" class="nav-link active"><span>🏠</span><span>Home</span></a>
+        <a href="/orders" class="nav-link"><span>🛒</span><span>Orders</span></a>
+        <a href="/dishes" class="nav-link"><span>🍽️</span><span>Dishes</span></a>
+        <a href="/snacks" class="nav-link"><span>🍿</span><span>Snacks</span></a>
+        <a href="/profile" class="nav-link"><span>👤</span><span>Profile</span></a>
     </nav>
 
     <div id="customAlert">
         <div class="alert-dot" id="alertDot"></div>
         <span id="alertMessage">Notification Message</span>
     </div>
-
-
-</div>
 
     <script>
         const API_URL = window.location.origin;
@@ -318,23 +308,19 @@ navigator.serviceWorker.register('/static/sw.js')
                 const btn = document.getElementById('heroBtn');
 
                 if (theme && theme.active) {
-                    // 1. Update background image (uses dynamic image_url or a fallback)
                     const bgImg = theme.image_url || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=500&q=60';
                     heroCard.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('${bgImg}')`;
                     
-                    // 2. Update headline text
                     if(theme.title) {
                         headline.innerHTML = theme.title.includes(" ") ? theme.title.replace(" ", "<br>") : theme.title;
                     }
                     
-                    // 3. Apply the theme color to button and card border
                     if (theme.theme_color) {
                         btn.style.backgroundColor = theme.theme_color;
                         heroCard.style.borderColor = theme.theme_color;
-                        heroCard.style.boxShadow = `0 10px 20px ${theme.theme_color}33`; // 33 is approx 20% opacity
+                        heroCard.style.boxShadow = `0 10px 20px ${theme.theme_color}33`;
                     }
                 } else {
-                    // Reset to default if Festive Mode is OFF
                     heroCard.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=500&q=60')`;
                     headline.innerHTML = "Hungry?<br>Order now!";
                     btn.style.backgroundColor = "#e67e22";
@@ -372,7 +358,6 @@ navigator.serviceWorker.register('/static/sw.js')
             }
         }
 
-        // Updated Cart Logic with Toast
         window.addToCart = function(name, price) {
             let cart = JSON.parse(localStorage.getItem('cart')) || [];
             cart.push({ name, price });
@@ -380,40 +365,36 @@ navigator.serviceWorker.register('/static/sw.js')
             showToast(name + " added to your cart! 🛒");
         };
 
-        // Updated Logout with Toast (No confirmation popup)
         function logoutUser() {
             showToast("Logging out... See you soon!", "success");
             localStorage.removeItem('oxela_user'); 
             setTimeout(() => {
-                window.location.href = "index.html";
+                window.location.href = "/";
             }, 1500);
         }
 
         async function startOrderTicker() {
-    const container = document.getElementById('tickerContainer');
-    const tickerText = document.getElementById('tickerText');
+            const container = document.getElementById('tickerContainer');
+            const tickerText = document.getElementById('tickerText');
 
-    try {
-        const res = await fetch(`${API_URL}/get_order_ticker`);
-        const data = await res.json();
+            try {
+                const res = await fetch(`${API_URL}/get_order_ticker`);
+                const data = await res.json();
 
-        if (data && data.length > 0) {
-            // Join all order messages into one long string
-            const combinedMessages = data.map(item => `<span>${item.msg}</span>`).join("");
-            
-            tickerText.innerHTML = combinedMessages + combinedMessages; // Repeat twice for seamless loop
-            container.style.display = 'block';
+                if (data && data.length > 0) {
+                    const combinedMessages = data.map(item => `<span>${item.msg}</span>`).join("");
+                    tickerText.innerHTML = combinedMessages + combinedMessages;
+                    container.style.display = 'block';
+                }
+            } catch (e) {
+                console.log("Ticker failed to load:", e);
+            }
         }
-    } catch (e) {
-        console.log("Ticker failed to load:", e);
-    }
-}
 
-// Ensure this is called in your DOMContentLoaded listener
-window.addEventListener('DOMContentLoaded', () => {
-    fetchFestiveTheme();
-    startOrderTicker(); 
-});
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchFestiveTheme();
+            startOrderTicker(); 
+        });
 
         async function processOrder() {
             const userData = JSON.parse(localStorage.getItem('oxela_user'));
@@ -444,7 +425,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 if (res.ok) {
                     showToast(`Order Successful! ID: ${result.order_id}`);
                     localStorage.removeItem('cart'); 
-                    setTimeout(() => { window.location.href = "orders.html"; }, 2000);
+                    setTimeout(() => { window.location.href = "/orders"; }, 2000);
                 } else {
                     showToast("Order failed: " + result.message, "error");
                 }
@@ -470,11 +451,6 @@ window.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // Initialize festive theme check on load
-        window.addEventListener('DOMContentLoaded', () => {
-    fetchFestiveTheme();
-    startOrderTicker(); // Start listening to your backend ticker
-});
     </script>
 </body>
 </html>
