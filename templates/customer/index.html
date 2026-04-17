@@ -146,7 +146,7 @@ const API_URL = window.location.origin;
         if(!localStorage.getItem('oxela_user')) {
             document.getElementById('authOverlay').style.display = 'flex';
         } else {
-            window.location.href = "home.";
+            window.location.href = "/home.";
         }
     }
 
@@ -238,7 +238,7 @@ const API_URL = window.location.origin;
                 const userData = result.user || { email: email };
                 localStorage.setItem('oxela_user', JSON.stringify(userData));
                 showToast("Welcome back!");
-                setTimeout(() => { window.location.href = "home"; }, 1000);
+                setTimeout(() => { window.location.href = "/home"; }, 1000);
             } else {
                 showToast(result.message, "error");
             }
