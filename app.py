@@ -14,7 +14,6 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 
 app = Flask(__name__)
-import os
 
 @app.route('/debug')
 def debug():
@@ -34,6 +33,7 @@ def debug():
         return f"SUCCESS! Inside templates/customer, I found: {files}"
     except Exception as e:
         return f"SYSTEM ERROR: {str(e)}"
+
 # --- THE HANDSHAKE TOOL (CORS) ---
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
@@ -257,7 +257,6 @@ def send_order_notification(order_data, order_type="REGULAR"):
 @app.route('/get_menu', methods=['GET'])
 def get_menu():
     try:
-        # NOW FETCHING FROM CLOUD DB
         return jsonify(get_all_menu_from_db()), 200
     except Exception as e:
         return jsonify({"message": f"Error loading menu: {str(e)}"}), 500
@@ -333,7 +332,6 @@ def submit_order():
     data = request.json
     orders = load_data(ORDERS_DB)
     
-    # Updated Stock logic for MongoDB
     for cart_item in data.get('items', []):
         db_item = menu_collection.find_one({'_id': ObjectId(cart_item.get('id'))})
         if db_item:
@@ -447,7 +445,6 @@ def update_menu_item():
         item_id = data.get('id')
         if item_id:
             update_fields = {k: v for k, v in data.items() if k != 'id'}
-            # Ensure number types
             if 'price' in update_fields: update_fields['price'] = int(update_fields['price'])
             if 'quantity' in update_fields: update_fields['quantity'] = int(update_fields['quantity'])
             
@@ -465,7 +462,6 @@ def add_menu_item():
         if 'quantity' not in data: data['quantity'] = 0
         if 'category' not in data: data['category'] = "Main"
         
-        # Numbers check
         data['quantity'] = int(data['quantity'])
         data['price'] = int(data['price'])
         
@@ -579,7 +575,7 @@ def serve_any_file(path):
 
 @app.route('/logout')
 def logout_redirect():
-    return root()
+    return login_page()
 
 @app.route('/reduce_stock', methods=['POST'])
 def reduce_stock():
@@ -587,7 +583,6 @@ def reduce_stock():
     item_id = data.get('id')
     reduce_by = int(data.get('reduceBy', 1))
 
-    # MongoDB: $inc with a negative number reduces the value
     result = db.menu.update_one(
         {"id": item_id},
         {"$inc": {"quantity": -reduce_by}}
@@ -599,7 +594,6 @@ def reduce_stock():
 
 # --- DYNAMIC FESTIVE LOGIC ---
 
-# Storage for festive settings
 festive_config = {
     "active": False,
     "title": "Hungry? Order Now!",
@@ -607,77 +601,53 @@ festive_config = {
     "theme_color": "#e67e22"
 }
 
-# Serve the uploaded festive images
 @app.route('/static/uploads/festive/<filename>')
 def serve_festive_image(filename):
     return send_from_directory(app.config['FESTIVE_UPLOAD_FOLDER'], filename)
 
-# Website gets settings
 @app.route('/get_festive_settings', methods=['GET'])
 def get_festive_settings():
     return jsonify(festive_config)
 
 @app.route('/')
 def login_page():
-    # This makes index.html (your login) the very first page
-    return render_templates('customer/index.html')
-
-@app.route('/')
-def login_page():
-    # This makes index.html (your login) the very first page
-    return render_templates('master/index.html')
-
-import os
-from flask import Flask, render_templates # ensure these are imported
+    return render_template('customer/index.html')
 
 @app.route('/home')
 def customer_home():
-    # Construct the path to check if the file exists
     template_path = os.path.join('templates', 'customer', 'home.html')
     if not os.path.exists(template_path):
-        return f"ERROR: File not found at {template_path}. Check your folder names!", 404
-    return render_templates('customer/home.html')
+        return f"ERROR: File not found at {template_path}.", 404
+    return render_template('customer/home.html')
 
 @app.route('/admin_hub')
 def admin_hub_view():
     template_path = os.path.join('templates', 'master', 'admin_hub.html')
     if not os.path.exists(template_path):
-        return f"ERROR: File not found at {template_path}. Check your folder names!", 404
+        return f"ERROR: File not found at {template_path}.", 404
     return render_template('master/admin_hub.html')
     
-# Master App updates settings (with image upload)
 @app.route('/update_festive', methods=['POST'])
-def handle_festive_save():  # I changed the name from 'update_festive' to 'handle_festive_save'
+def handle_festive_save():
     global festive_config
     
-    # Handle Image Upload if present
     if 'image' in request.files:
         file = request.files['image']
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['FESTIVE_UPLOAD_FOLDER'], filename))
-            # Build URL for your Render app
             festive_config['image_url'] = f"/static/uploads/festive/{filename}"
 
-    # Update text and toggle from Form Data
     festive_config['active'] = request.form.get('active') == 'true'
     festive_config['title'] = request.form.get('title', festive_config['title'])
     festive_config['theme_color'] = request.form.get('theme_color', festive_config['theme_color'])
     
     return jsonify({"message": "Festive theme updated successfully!", "current": festive_config})
-# 1. THE FACE: This shows you the Master Dashboard
+
 @app.route('/oxela_admin_panel') 
 def master_dashboard():
-    # We tell Flask to look specifically in the 'master' subfolder
     return render_template('master/settings.html')
-    
-    # ... (All your existing code for handling images and form data) ...
-    
-    return jsonify({"message": "Festive theme updated successfully!", "current": festive_config})
-
-
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
-    print(f"O'XELA KITCHEN PRO STARTING ON PORT {port}...")
     app.run(host='0.0.0.0', port=port)
