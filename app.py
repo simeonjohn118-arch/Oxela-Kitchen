@@ -620,6 +620,20 @@ def customer_home():
         return f"ERROR: File not found at {template_path}.", 404
     return render_template('customer/home.html')
 
+@app.route('/dishes')
+def customer_home():
+    template_path = os.path.join('templates', 'customer', 'dishes.html')
+    if not os.path.exists(template_path):
+        return f"ERROR: File not found at {template_path}.", 404
+    return render_template('customer/dishes.html')
+
+@app.route('/snacks')
+def customer_home():
+    template_path = os.path.join('templates', 'customer', 'snacks.html')
+    if not os.path.exists(template_path):
+        return f"ERROR: File not found at {template_path}.", 404
+    return render_template('customer/snacks.html')
+
 @app.route('/admin_hub')
 def admin_hub_view():
     template_path = os.path.join('templates', 'master', 'admin_hub.html')
@@ -647,25 +661,6 @@ def handle_festive_save():
 @app.route('/oxela_admin_panel') 
 def master_dashboard():
     return render_template('master/settings.html')
-
-@app.route('/dishes')
-def dishes():
-    return render_template('customer/dishes.html')
-
-@app.route('/snacks')
-def snacks():
-    return render_template('customer/snacks.html')
-
-@app.route('/orders')
-def orders():
-    return render_template('custome/rorders.html')
-@app.route('/dishes')
-def dishes():
-    return render_template('custome/dishes.html')
-
-@app.route('/faq')
-def faq():
-    return render_template('custome/faq.html')
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
