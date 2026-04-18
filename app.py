@@ -648,6 +648,39 @@ def handle_festive_save():
 def master_dashboard():
     return render_template('master/settings.html')
 
+# --- NAVIGATION ROUTES ---
+@app.route('/')
+def login_page():
+    return render_template('customer/index.html')
+
+@app.route('/home')
+def home():
+    return render_template('customer/home.html')
+
+@app.route('/dishes')
+def dishes():
+    return render_template('customer/dishes.html')
+
+@app.route('/snacks')
+def snacks():
+    return render_template('customer/snacks.html')
+
+@app.route('/orders')
+def orders():
+    return render_template('customer/orders.html')
+
+@app.route('/profile')
+def profile():
+    return render_template('customer/profile.html')
+
+@app.route('/settings')
+def settings():
+    return render_template('customer/settings.html')
+
+@app.route('/complaints')
+def complaints():
+    return render_template('customer/complaint.html')
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
