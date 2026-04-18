@@ -644,6 +644,32 @@ def handle_festive_save():
     
     return jsonify({"message": "Festive theme updated successfully!", "current": festive_config})
 
+# --- ADD THESE AT THE VERY BOTTOM (Above the if __name__ == "__main__" line) ---
+
+@app.route('/dishes')
+def dishes_page_view():
+    return render_template('customer/dishes.html')
+
+@app.route('/snacks')
+def snacks_page_view():
+    return render_template('customer/snacks.html')
+
+@app.route('/orders')
+def orders_page_view():
+    return render_template('customer/orders.html')
+
+@app.route('/profile')
+def profile_page_view():
+    return render_template('customer/profile.html')
+
+@app.route('/settings')
+def settings_page_view():
+    return render_template('customer/settings.html')
+
+@app.route('/complaints')
+def complaints_page_view():
+    return render_template('customer/complaint.html')
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
