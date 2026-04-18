@@ -670,6 +670,14 @@ def settings_page_view():
 def complaints_page_view():
     return render_template('customer/complaint.html')
 
+@app.route('/history')
+def complaints_page_view():
+    return render_template('customer/history.html')
+
+@app.route('/special')
+def complaints_page_view():
+    return render_template('customer/special.html')
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
