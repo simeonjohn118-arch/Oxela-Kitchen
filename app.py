@@ -620,20 +620,6 @@ def customer_home():
         return f"ERROR: File not found at {template_path}.", 404
     return render_template('customer/home.html')
 
-@app.route('/dishes')
-def customer_home():
-    template_path = os.path.join('templates', 'customer', 'dishes.html')
-    if not os.path.exists(template_path):
-        return f"ERROR: File not found at {template_path}.", 404
-    return render_template('customer/dishes.html')
-
-@app.route('/snacks')
-def customer_home():
-    template_path = os.path.join('templates', 'customer', 'snacks.html')
-    if not os.path.exists(template_path):
-        return f"ERROR: File not found at {template_path}.", 404
-    return render_template('customer/snacks.html')
-
 @app.route('/admin_hub')
 def admin_hub_view():
     template_path = os.path.join('templates', 'master', 'admin_hub.html')
