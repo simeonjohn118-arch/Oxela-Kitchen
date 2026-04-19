@@ -659,11 +659,11 @@ def orders_page_view():
     return render_template('customer/orders.html')
 
 @app.route('/history')
-def history_view():
+def history_page_view():
     return render_template('customer/history.html')
 
-@app.route('/special_order')
-def special_order_view():
+@app.route('/special')
+def special_page_view():
     return render_template('customer/special.html')
 
 @app.route('/profile')
