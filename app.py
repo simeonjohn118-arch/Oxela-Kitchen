@@ -670,6 +670,16 @@ def settings_page_view():
 def complaints_page_view():
     return render_template('customer/complaint.html')
 
+# --- ADDITIONAL NAVIGATION ROUTES ---
+
+@app.route('/history')
+def history_view():
+    return render_template('customer/history.html')
+
+@app.route('/special_order')
+def special_order_view():
+    return render_template('customer/special_order.html')
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
