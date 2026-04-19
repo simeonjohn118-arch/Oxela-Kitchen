@@ -678,6 +678,18 @@ def settings_page_view():
 def complaints_page_view():
     return render_template('customer/complaint.html')
 
+# --- MASTER APP: ENTRY & DASHBOARD ---
+
+@app.route('/master_admin')
+def master_index():
+    # This is the login/landing page for the Master App
+    return render_template('master/index.html')
+
+@app.route('/master_hub')
+def master_admin_hub():
+    # This is the main control center after logging in
+    return render_template('master/admin_hub.html')
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
