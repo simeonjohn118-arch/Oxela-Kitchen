@@ -658,6 +658,14 @@ def snacks_page_view():
 def orders_page_view():
     return render_template('customer/orders.html')
 
+@app.route('/history')
+def history_view():
+    return render_template('customer/history.html')
+
+@app.route('/special_order')
+def special_order_view():
+    return render_template('customer/special.html')
+
 @app.route('/profile')
 def profile_page_view():
     return render_template('customer/profile.html')
@@ -669,16 +677,6 @@ def settings_page_view():
 @app.route('/complaints')
 def complaints_page_view():
     return render_template('customer/complaint.html')
-
-# --- ADDITIONAL NAVIGATION ROUTES ---
-
-@app.route('/history')
-def history_view():
-    return render_template('customer/history.html')
-
-@app.route('/special_order')
-def special_order_view():
-    return render_template('customer/special_order.html')
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
