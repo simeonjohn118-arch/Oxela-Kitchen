@@ -680,14 +680,14 @@ def complaints_page_view():
 
 # --- MASTER APP: ENTRY & DASHBOARD ---
 
-@app.route('/master_admin')
+@app.route('/master')
 def master_index():
-    # This is the login/landing page for the Master App
+    # This serves the Master Login page
     return render_template('master/index.html')
 
-@app.route('/master_hub')
+@app.route('/master/dashboard')
 def master_admin_hub():
-    # This is the main control center after logging in
+    # This serves the Master Admin Hub
     return render_template('master/admin_hub.html')
 
 if __name__ == '__main__':
