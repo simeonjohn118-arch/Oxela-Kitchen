@@ -680,14 +680,30 @@ def complaints_page_view():
 
 # --- MASTER APP: ENTRY & DASHBOARD ---
 
-@app.route('/master')
+@app.route('/master', methods=['GET', 'POST'])
 def master_index():
-    # This serves the Master Login page
+    if request.method == 'POST':
+        # 1. Get the data from the form
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        # 2. Check if credentials are correct
+        # Replace 'admin' and '1234' with your actual logic or database check
+        if username == "admin" and password == "1234":
+            session['master_user'] = username  # Create the session
+            return redirect(url_for('master_admin_hub'))
+        else:
+            # This is where the 'Invalid Login' message comes from
+            return render_template('master/index.html', error="Invalid Credentials")
+
+    # If it's just a GET (first time visiting), just show the page
     return render_template('master/index.html')
 
 @app.route('/master/dashboard')
 def master_admin_hub():
-    # This serves the Master Admin Hub
+    # Security: If they aren't logged in, send them back to login
+    if 'master_user' not in session:
+        return redirect(url_for('master_index'))
     return render_template('master/admin_hub.html')
 
 if __name__ == '__main__':
