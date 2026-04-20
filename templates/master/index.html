@@ -34,6 +34,61 @@
 
         .hidden { display: none; }
         #installBtn { background: #e67e22; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 20px;}
+        .download-section {
+    padding: 50px 20px;
+    background: #fdfaf7;
+}
+
+.download-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.download-card {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    text-align: center;
+    width: 100%;
+    max-width: 300px;
+    border: 1px solid #eee;
+}
+
+.download-card h3 {
+    margin-bottom: 10px;
+    color: #c0392b;
+}
+
+.btn-download {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 15px 25px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 700;
+    margin-top: 20px;
+    transition: transform 0.2s;
+    width: 100%;
+}
+
+.btn-download:hover {
+    transform: translateY(-3px);
+}
+
+.customer-btn {
+    background: #27ae60; /* Green for customers */
+    color: white;
+}
+
+.master-btn {
+    background: #2c3e50; /* Dark Blue/Black for Admin */
+    color: white;
+}
     </style>
 </head>
 <body>
@@ -80,6 +135,14 @@
     </div>
 </div>
 
+<div style="display: flex; gap: 10px; justify-content: center; padding: 20px;">
+    <a href="/static/downloads/oxela_customer.apk" download class="btn-download customer-btn">
+        <span>📲</span> Customer App
+    </a>
+    <a href="/static/downloads/oxela_master.apk" download class="btn-download master-btn">
+        <span>⚙️</span> Master App
+    </a>
+</div>
 <script>
     const API_URL = window.location.origin;
 
