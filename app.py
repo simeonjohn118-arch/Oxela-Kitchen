@@ -679,32 +679,47 @@ def complaints_page_view():
     return render_template('customer/complaint.html')
 
 # --- MASTER APP: ENTRY & DASHBOARD ---
+from flask import Flask, render_template, request, redirect, url_for, session
 
+app = Flask(__name__)
+app.secret_key = 'oxela_secret_key_123' # This is REQUIRED for sessions to work
+
+# --- 1. THE LOGIN GATE ---
 @app.route('/master', methods=['GET', 'POST'])
 def master_index():
     if request.method == 'POST':
-        # 1. Get the data from the form
-        username = request.form.get('username')
-        password = request.form.get('password')
+        email = request.form.get('username')
+        pwd = request.form.get('password')
 
-        # 2. Check if credentials are correct
-        # Replace 'admin' and '1234' with your actual logic or database check
-        if username == "admin" and password == "1234":
-            session['master_user'] = username  # Create the session
-            return redirect(url_for('master/admin_hub'))
+        # This checks your credentials
+        if email == "admin@oxela.com" and pwd == "1234":
+            # This creates the "VIP Pass" in the browser
+            session['admin_user'] = email 
+            return redirect(url_for('master_admin_hub'))
         else:
-            # This is where the 'Invalid Login' message comes from
             return render_template('master/index.html', error="Invalid Credentials")
 
-    # If it's just a GET (first time visiting), just show the page
+    # If already logged in, don't show the login page, go straight to dashboard
+    if 'admin_user' in session:
+        return redirect(url_for('master_admin_hub'))
+        
     return render_template('master/index.html')
 
+# --- 2. THE PROTECTED DASHBOARD ---
 @app.route('/master/dashboard')
 def master_admin_hub():
-    # Security: If they aren't logged in, send them back to login
-    if 'master_user' not in session:
-        return redirect(url_for('master/index'))
+    # This is the "Security Guard"
+    # It checks for the VIP Pass. If missing, it kicks you back to login.
+    if 'admin_user' not in session:
+        return redirect(url_for('master_index'))
+        
     return render_template('master/admin_hub.html')
+
+# --- 3. THE LOGOUT (Clearing the Pass) ---
+@app.route('/master/logout')
+def master_logout():
+    session.pop('admin_user', None) # Destroys the VIP Pass
+    return redirect(url_for('master_index'))
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
