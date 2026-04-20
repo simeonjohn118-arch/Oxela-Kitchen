@@ -19,19 +19,27 @@ app.secret_key = 'oxela_kitchen_secure_key_2026' # Add this line!
 @app.route('/master', methods=['GET', 'POST'])
 def master_login():
     if request.method == 'POST':
-        # Use .strip() to remove any accidental spaces from the user input
         user_email = request.form.get('username', '').strip()
         user_pwd = request.form.get('password', '').strip()
 
-        # Hardcoded check for testing (Since staff.json might be the issue)
-        if user_email == "admin@oxela.com" and user_pwd == "1234":
-            session['admin_logged_in'] = True
-            return jsonify({"status": "success", "redirect": url_for('master_dashboard')})
-        else:
-            # Send a 401 error so JavaScript can "catch" it and show a toast
-            return jsonify({"status": "error", "message": "Invalid Login Details"}), 401
+        # --- THIS IS THE SECTION TO CHANGE ---
+        # Instead of my "admin@oxela.com", use YOUR variable or function
+        # For example, if you have a list of staff called 'all_staff':
+        
+        is_valid = False
+        # If you use a JSON file, your logic likely looks like this:
+        for staff in staff_data: # staff_data being your loaded staff.json
+            if staff['email'] == user_email and staff['password'] == user_pwd:
+                is_valid = True
+                break
 
-    return render_template('master/index.html')
+        if is_valid:
+            session['admin_logged_in'] = True
+            return redirect(url_for('master_dashboard'))
+        else:
+            # This is what's giving you the white page. 
+            # Let's send it back to the template so the Toast can work.
+            return render_template('master/index.html', error="Invalid Credentials")x.html')
 
 @app.route('/master/admin_hub')
 def master_dashboard():
