@@ -63,7 +63,7 @@
         <p class="toggle-text"><span onclick="showForm('forgotForm')">Forgot Password?</span></p>
         <p class="toggle-text">New Chef? <span onclick="showForm('registerForm')">Register here</span></p>
     </form>
-</div>p
+</div>
     <div id="registerForm" class="hidden">
         <h2>Admin Registration 👨‍🍳</h2>
         <div class="input-group"><label>Name</label><input type="text" id="regName" placeholder="Chef Name"></div>
@@ -115,7 +115,7 @@
             if (res.ok) {
                 localStorage.setItem('admin_name', data.name);
                 showToast("Access Granted! Loading Hub...", "#27ae60");
-                setTimeout(() => { window.location.href = '/admin_hub'; }, 1500);
+                setTimeout(() => { window.location.href = 'master/admin_hub'; }, 1500);
             } else {
                 showToast(data.error || "Invalid Credentials", "#e74c3c");
             }

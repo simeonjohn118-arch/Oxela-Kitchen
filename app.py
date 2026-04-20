@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_from_directory, redirect, url_for, session
 from flask_cors import CORS
 import json
 import os
@@ -14,6 +14,33 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 
 app = Flask(__name__)
+app.secret_key = 'oxela_kitchen_secure_key_2026' # Add this line!
+@app.route('/master', methods=['GET', 'POST'])
+def master_login():
+    if request.method == 'POST':
+        user_email = request.form.get('username')
+        user_pwd = request.form.get('password')
+
+        # TEST CREDENTIALS: Use these exactly to test first
+        if user_email == "admin@oxela.com" and user_pwd == "1234":
+            session['admin_logged_in'] = True
+            return redirect(url_for('master_dashboard'))
+        else:
+            return "Invalid Login! Go back and try admin@oxela.com / 1234"
+
+    return render_template('master/index.html')
+
+@app.route('/master/dashboard')
+def master_dashboard():
+    # If the session isn't found, redirect to login
+    if not session.get('admin_logged_in'):
+        return redirect(url_for('master_login'))
+    return render_template('master/admin_hub.html')
+
+@app.route('/master/logout')
+def master_logout():
+    session.clear() # Wipes everything
+    return redirect(url_for('master_login'))
 
 @app.route('/debug')
 def debug():
@@ -677,49 +704,6 @@ def settings_page_view():
 @app.route('/complaints')
 def complaints_page_view():
     return render_template('customer/complaint.html')
-
-# --- MASTER APP: ENTRY & DASHBOARD ---
-from flask import Flask, render_template, request, redirect, url_for, session
-
-app = Flask(__name__)
-app.secret_key = 'oxela_secret_key_123' # This is REQUIRED for sessions to work
-
-# --- 1. THE LOGIN GATE ---
-@app.route('/master', methods=['GET', 'POST'])
-def master_index():
-    if request.method == 'POST':
-        email = request.form.get('username')
-        pwd = request.form.get('password')
-
-        # This checks your credentials
-        if email == "admin@oxela.com" and pwd == "1234":
-            # This creates the "VIP Pass" in the browser
-            session['admin_user'] = email 
-            return redirect(url_for('master_admin_hub'))
-        else:
-            return render_template('master/index.html', error="Invalid Credentials")
-
-    # If already logged in, don't show the login page, go straight to dashboard
-    if 'admin_user' in session:
-        return redirect(url_for('master_admin_hub'))
-        
-    return render_template('master/index.html')
-
-# --- 2. THE PROTECTED DASHBOARD ---
-@app.route('/master/dashboard')
-def master_admin_hub():
-    # This is the "Security Guard"
-    # It checks for the VIP Pass. If missing, it kicks you back to login.
-    if 'admin_user' not in session:
-        return redirect(url_for('master_index'))
-        
-    return render_template('master/admin_hub.html')
-
-# --- 3. THE LOGOUT (Clearing the Pass) ---
-@app.route('/master/logout')
-def master_logout():
-    session.pop('admin_user', None) # Destroys the VIP Pass
-    return redirect(url_for('master_index'))
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
