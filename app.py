@@ -15,19 +15,21 @@ from bson.objectid import ObjectId
 
 app = Flask(__name__)
 app.secret_key = 'oxela_kitchen_secure_key_2026' # Add this line!
+
 @app.route('/master', methods=['GET', 'POST'])
 def master_login():
     if request.method == 'POST':
-        user_email = request.form.get('username')
-        user_pwd = request.form.get('password')
+        # Use .strip() to remove any accidental spaces from the user input
+        user_email = request.form.get('username', '').strip()
+        user_pwd = request.form.get('password', '').strip()
 
-        # TEST CREDENTIALS
+        # Hardcoded check for testing (Since staff.json might be the issue)
         if user_email == "admin@oxela.com" and user_pwd == "1234":
             session['admin_logged_in'] = True
-            # This matches the name of the function below
-            return redirect(url_for('master_dashboard')) 
+            return jsonify({"status": "success", "redirect": url_for('master_dashboard')})
         else:
-            return "Invalid Login! Go back and try admin@oxela.com / 1234"
+            # Send a 401 error so JavaScript can "catch" it and show a toast
+            return jsonify({"status": "error", "message": "Invalid Login Details"}), 401
 
     return render_template('master/index.html')
 
