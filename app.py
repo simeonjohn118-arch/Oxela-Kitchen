@@ -691,7 +691,7 @@ def master_index():
         # Replace 'admin' and '1234' with your actual logic or database check
         if username == "admin" and password == "1234":
             session['master_user'] = username  # Create the session
-            return redirect(url_for('master_admin_hub'))
+            return redirect(url_for('master/admin_hub'))
         else:
             # This is where the 'Invalid Login' message comes from
             return render_template('master/index.html', error="Invalid Credentials")
@@ -703,7 +703,7 @@ def master_index():
 def master_admin_hub():
     # Security: If they aren't logged in, send them back to login
     if 'master_user' not in session:
-        return redirect(url_for('master_index'))
+        return redirect(url_for('master/index'))
     return render_template('master/admin_hub.html')
 
 if __name__ == '__main__':
