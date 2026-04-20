@@ -740,7 +740,7 @@ def sales_records():
 def complaints():
     return render_template('master/complaints.html')
 
-@app.route('/settings')
+@app.route('/settings_dashboard')
 def settings():
     return render_template('master/settings_dashboard.html')
 
