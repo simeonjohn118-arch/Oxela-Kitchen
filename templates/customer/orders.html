@@ -9,77 +9,193 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --accent: #ff6b6b; --dark: #121212; --bg: #f4f7f6; --success: #27ae60; --warning: #f39c12; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
-        body { background-color: var(--bg); padding-bottom: 90px; } 
+        
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Outfit', sans-serif; 
+            -webkit-tap-highlight-color: transparent; /* Cleaner mobile interaction */
+        }
+
+        body { 
+            background-color: var(--bg); 
+            padding-bottom: 100px; /* Space for the fixed footer nav */
+            width: 100%;
+            overflow-x: hidden;
+        } 
 
         /* Top Navigation & Dropdown */
         .top-nav { 
-            padding: 20px; display: flex; align-items: center; justify-content: space-between; 
-            background: white; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+            padding: 15px 20px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            background: white; 
+            position: sticky; 
+            top: 0; 
+            z-index: 1000; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+            width: 100%;
         }
-        .back-link { text-decoration: none; color: var(--dark); font-weight: 800; font-size: 1.2rem; }
+        .back-link { text-decoration: none; color: var(--dark); font-weight: 800; font-size: 1.1rem; }
         
         .menu-container { position: relative; }
-        .menu-icon { font-size: 1.5rem; cursor: pointer; padding: 5px; color: var(--dark); }
+        .menu-icon { font-size: 1.4rem; cursor: pointer; padding: 5px; color: var(--dark); }
+        
         .dropdown {
-            position: absolute; right: 0; top: 40px; background: white; border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 180px; display: none; overflow: hidden; border: 1px solid #eee;
+            position: absolute; 
+            right: 0; 
+            top: 45px; 
+            background: white; 
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            width: 180px; 
+            display: none; 
+            overflow: hidden; 
+            border: 1px solid #eee;
         }
         .dropdown a {
-            display: block; padding: 15px; text-decoration: none; color: #444; font-size: 0.9rem; border-bottom: 1px solid #f9f9f9;
+            display: block; 
+            padding: 16px 20px; /* Larger tap target */
+            text-decoration: none; 
+            color: #444; 
+            font-size: 0.95rem; 
+            border-bottom: 1px solid #f9f9f9;
         }
         .dropdown a:hover { background: #fff5f5; color: var(--accent); }
 
-        .container { max-width: 450px; margin: 0 auto; padding: 20px; }
+        .container { 
+            width: 100%;
+            max-width: 450px; 
+            margin: 0 auto; 
+            padding: 15px; 
+        }
 
         /* Cards & UI */
-        .card { background: white; border-radius: 25px; padding: 25px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
+        .card { 
+            background: white; 
+            border-radius: 25px; 
+            padding: 20px; 
+            margin-bottom: 15px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03); 
+        }
         .section-tag { background: #ffe3e3; color: var(--accent); padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-bottom: 15px; display: inline-block; }
-        .item-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #f8f8f8; }
+        .item-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #f8f8f8; }
 
         .remove-btn {
             color: #ff4d4d;
             font-weight: 800;
             cursor: pointer;
-            padding: 0 8px;
+            padding: 8px; /* Larger area for mobile thumb */
             font-size: 1.1rem;
             border: none;
             background: transparent;
         }
 
         .input-box { margin-bottom: 15px; }
-        .input-box label { display: block; font-size: 0.8rem; margin-bottom: 5px; font-weight: 600; color: #888; }
-        .input-box input, .input-box textarea, .input-box select { width: 100%; padding: 14px; border: none; border-radius: 12px; background: #f8f9fa; font-size: 1rem; outline: none; }
+        .input-box label { display: block; font-size: 0.75rem; margin-bottom: 5px; font-weight: 600; color: #888; }
+        
+        /* 16px font-size prevents iOS auto-zoom on focus */
+        .input-box input, .input-box textarea, .input-box select { 
+            width: 100%; 
+            padding: 14px; 
+            border: none; 
+            border-radius: 12px; 
+            background: #f8f9fa; 
+            font-size: 16px; 
+            outline: none; 
+            font-family: inherit;
+        }
 
-        .total-strip { background: var(--dark); color: white; padding: 20px; border-radius: 20px; display: flex; flex-direction: column; gap: 5px; }
+        .total-strip { 
+            background: var(--dark); 
+            color: white; 
+            padding: 20px; 
+            border-radius: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 8px; 
+        }
         .price-line { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         
-        .pay-btn { width: 100%; margin-top: 20px; padding: 20px; background: linear-gradient(135deg, #ff6b6b, #ff8e53); color: white; border: none; border-radius: 20px; font-size: 1.1rem; font-weight: 800; cursor: pointer; }
+        .pay-btn { 
+            width: 100%; 
+            margin-top: 15px; 
+            padding: 18px; 
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53); 
+            color: white; 
+            border: none; 
+            border-radius: 20px; 
+            font-size: 1.1rem; 
+            font-weight: 800; 
+            cursor: pointer; 
+        }
         .pay-btn:disabled { background: #ccc; cursor: not-allowed; }
 
         /* Store Closed Overlay */
-        #closedNotice { display: none; background: #fff1f0; color: #cf1322; padding: 15px; border-radius: 15px; border: 1px solid #ffa39e; margin-bottom: 20px; text-align: center; font-weight: 600; }
+        #closedNotice { display: none; background: #fff1f0; color: #cf1322; padding: 15px; border-radius: 15px; border: 1px solid #ffa39e; margin-bottom: 20px; text-align: center; font-weight: 600; font-size: 0.9rem; }
 
         /* Bottom Navbar */
         .footer-nav {
             position: fixed; bottom: 0; left: 0; width: 100%; background: white;
-            display: flex; justify-content: space-around; padding: 15px 0;
+            display: flex; justify-content: space-around; padding: 12px 0 25px 0; /* Extra bottom padding for home indicators */
             box-shadow: 0 -5px 20px rgba(0,0,0,0.05); z-index: 1000;
         }
-        .nav-item { text-decoration: none; color: #bbb; display: flex; flex-direction: column; align-items: center; font-size: 0.65rem; font-weight: 600; }
+        .nav-item { text-decoration: none; color: #bbb; display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; font-weight: 600; flex: 1; }
         .nav-item.active { color: var(--accent); }
-        .nav-icon { font-size: 1.4rem; margin-bottom: 4px; }
+        .nav-icon { font-size: 1.5rem; margin-bottom: 2px; }
 
         /* Modal & Voucher */
-        #paymentModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; }
-        .voucher { background: white; border-radius: 30px; width: 100%; max-width: 400px; padding: 30px; text-align: center; }
-        .selected-acc { text-align: left; background: #fdf2f2; padding: 20px; border-radius: 15px; margin: 15px 0; border: 2px dashed var(--accent); cursor: pointer; }
+        #paymentModal { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.85); 
+            z-index: 2000; 
+            display: none; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 15px; 
+        }
+        .voucher { 
+            background: white; 
+            border-radius: 30px; 
+            width: 100%; 
+            max-width: 400px; 
+            padding: 25px; 
+            text-align: center; 
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .selected-acc { text-align: left; background: #fdf2f2; padding: 18px; border-radius: 15px; margin: 15px 0; border: 2px dashed var(--accent); cursor: pointer; }
 
         /* Alerts */
-        #customAlert { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: #1a1a1a; color: white; padding: 12px 20px; border-radius: 12px; font-weight: 500; z-index: 10000; transition: 0.5s; display: flex; align-items: center; gap: 12px; min-width: 280px; }
-        #customAlert.show { bottom: 100px; } 
-        .alert-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+        #customAlert { 
+            position: fixed; 
+            bottom: -100px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            background: #1a1a1a; 
+            color: white; 
+            padding: 12px 20px; 
+            border-radius: 12px; 
+            font-weight: 500; 
+            z-index: 10000; 
+            transition: 0.5s; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            width: 90%;
+            max-width: 320px;
+        }
+        #customAlert.show { bottom: 95px; } 
+        .alert-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
         .pending-box { display: none; padding: 20px; text-align: center; }
+        
+        .show { display: block; }
     </style>
 </head>
 <body>

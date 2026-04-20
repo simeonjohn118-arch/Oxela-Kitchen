@@ -18,12 +18,15 @@
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent; /* Improves mobile touch feel */
         }
 
         body {
             background-color: #fcfcfc;
             padding-bottom: 80px; 
             color: #333;
+            width: 100%;
+            overflow-x: hidden; /* Prevents unwanted side-scrolling */
         }
 
         /* Top Navigation */
@@ -31,17 +34,18 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 20px;
+            padding: 12px 15px; /* Slightly tighter for mobile */
             background: #ffffff;
             position: sticky;
             top: 0;
             z-index: 1000;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            width: 100%;
         }
 
         .logo {
             font-weight: 800;
-            font-size: 1.2rem;
+            font-size: 1.1rem; /* Slightly smaller for narrow screens */
             color: #d35400;
         }
 
@@ -50,40 +54,41 @@
             cursor: pointer;
             background: none;
             border: none;
+            padding: 5px; /* Larger hit area for thumbs */
         }
 
         /* Dropdown Menu Styling */
         .dropdown {
             display: none;
             position: absolute;
-            top: 60px;
-            right: 20px;
+            top: 55px;
+            right: 15px;
             background: white;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             border-radius: 12px;
-            width: 180px;
+            width: 170px;
             z-index: 2000;
             border: 1px solid #eee;
         }
         .dropdown a {
             display: block;
-            padding: 12px 15px;
+            padding: 15px; /* More vertical space for easier tapping */
             text-decoration: none;
             color: #333;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             border-bottom: 1px solid #f9f9f9;
         }
         .dropdown a:last-child { border-bottom: none; }
         .show { display: block; }
 
         /* Hero Banner */
-        .hero { padding: 15px; }
+        .hero { padding: 15px; width: 100%; }
         .hero-card {
             background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), 
                         url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=500&q=60');
             background-size: cover;
             background-position: center;
-            height: 160px;
+            height: 150px; /* Reduced height for better mobile proportions */
             border-radius: 20px;
             display: flex;
             flex-direction: column;
@@ -94,41 +99,43 @@
             border: 2px solid transparent;
         }
 
-        .hero-card h1 { font-size: 1.5rem; margin-bottom: 10px; }
+        .hero-card h1 { font-size: 1.3rem; margin-bottom: 10px; line-height: 1.2; }
         .hero-card button {
             width: fit-content;
-            padding: 8px 20px;
+            padding: 10px 22px; /* Chunkier button for mobile */
             border: none;
             border-radius: 25px;
             background: #e67e22;
             color: white;
             font-weight: bold;
+            font-size: 0.9rem;
             cursor: pointer;
             transition: background 0.3s ease;
         }
 
         /* Horizontal Scrolling Sections */
         .section-title {
-            padding: 20px 20px 10px 20px;
-            font-size: 1.1rem;
+            padding: 15px 20px 10px 20px;
+            font-size: 1.05rem;
             font-weight: 700;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .section-title a { font-size: 0.8rem; color: #e67e22; text-decoration: none; }
+        .section-title a { font-size: 0.85rem; color: #e67e22; text-decoration: none; font-weight: 600; }
 
         .horizontal-container {
             display: flex;
             overflow-x: auto;
             gap: 15px;
-            padding: 0 20px 10px 20px;
-            scroll-bar-width: none;
+            padding: 5px 20px 15px 20px;
+            -webkit-overflow-scrolling: touch; /* Smooth inertia scrolling for iOS */
+            scrollbar-width: none;
         }
         .horizontal-container::-webkit-scrollbar { display: none; }
 
         .food-card {
-            min-width: 150px;
+            min-width: 145px; /* Optimized width for mobile grid feel */
             background: white;
             border-radius: 15px;
             padding: 10px;
@@ -136,21 +143,22 @@
             text-align: left;
             cursor: pointer;
         }
-        .food-card img { width: 100%; height: 100px; object-fit: cover; border-radius: 12px; margin-bottom: 8px; }
-        .food-card p { font-size: 0.9rem; font-weight: 600; margin-bottom: 4px; }
+        .food-card img { width: 100%; height: 95px; object-fit: cover; border-radius: 12px; margin-bottom: 8px; }
+        .food-card p { font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; line-height: 1.2; }
         .food-card span { color: #e67e22; font-weight: 700; font-size: 0.85rem; }
 
         /* Bottom Fixed Navigation */
         .bottom-nav {
             position: fixed;
             bottom: 0; left: 0; right: 0;
-            height: 65px;
+            height: 70px; /* Slightly taller for modern mobile safe areas */
             background: white;
             display: flex;
             justify-content: space-around;
             align-items: center;
             border-top: 1px solid #eee;
             z-index: 1000;
+            padding-bottom: 5px;
         }
         .nav-link {
             text-decoration: none;
@@ -160,9 +168,10 @@
             align-items: center;
             font-size: 0.7rem;
             gap: 4px;
+            flex: 1; /* Equal spacing */
         }
         .nav-link.active { color: #e67e22; }
-        .nav-link span:first-child { font-size: 1.3rem; }
+        .nav-link span:first-child { font-size: 1.4rem; }
 
         #customAlert {
             position: fixed;
@@ -174,18 +183,19 @@
             padding: 12px 20px;
             border-radius: 12px;
             font-weight: 500;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             z-index: 10000;
             transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             display: flex;
             align-items: center;
             gap: 12px;
-            min-width: 300px;
+            width: 90%; /* Responsive width */
+            max-width: 320px;
             border: 1px solid rgba(255,255,255,0.1);
         }
-        #customAlert.show { bottom: 40px; }
-        .alert-dot { width: 10px; height: 10px; border-radius: 50%; background: #ff6b6b; }
+        #customAlert.show { bottom: 85px; } /* Positions above bottom-nav */
+        .alert-dot { width: 10px; height: 10px; border-radius: 50%; background: #ff6b6b; flex-shrink: 0; }
 
         /* Ticker Styles */
         .ticker-wrap {
@@ -195,17 +205,17 @@
             border-bottom: 1px solid #f0f0f0;
             white-space: nowrap;
             box-sizing: border-box;
-            padding: 8px 0;
+            padding: 10px 0;
         }
         .ticker-move {
             display: inline-block;
             padding-left: 100%;
             animation: ticker 25s linear infinite;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 600;
             color: #333;
         }
-        .ticker-move span { margin-right: 50px; color: #333; }
+        .ticker-move span { margin-right: 40px; color: #333; }
         .ticker-move b { color: #e67e22; }
         @keyframes ticker {
             0% { transform: translate(0, 0); }
