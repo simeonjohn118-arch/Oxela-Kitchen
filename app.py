@@ -19,34 +19,42 @@ app.secret_key = 'oxela_kitchen_secure_key_2026' # Add this line!
 import json
 import os
 
+import json
+import os
+
 @app.route('/master', methods=['GET', 'POST'])
 def master_login():
     if request.method == 'POST':
         user_email = request.form.get('username', '').strip()
         user_pwd = request.form.get('password', '').strip()
 
-        # 1. Load the actual data from staff.json
-        try:
-            # Adjust the path if staff.json is in a different folder
-            with open('staff.json', 'r') as f:
-                staff_list = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError):
-            return jsonify({"status": "error", "message": "Database Error: staff.json not found"}), 500
+        # --- SAFE FILE LOADING ---
+        # This finds the exact folder app.py is in so it doesn't get lost
+        base_path = os.path.dirname(os.path.abspath(__file__))
+        json_path = os.path.join(base_path, 'staff.json')
 
-        # 2. Check if credentials match any staff member
+        try:
+            if not os.path.exists(json_path):
+                print(f"DEBUG: File not found at {json_path}")
+                return jsonify({"status": "error", "message": "staff.json file missing"}), 500
+
+            with open(json_path, 'r') as f:
+                staff_list = json.load(f)
+        except Exception as e:
+            print(f"DEBUG: Error reading JSON: {e}")
+            return jsonify({"status": "error", "message": "Database read error"}), 500
+
+        # --- CREDENTIAL CHECK ---
         is_valid = False
         for staff in staff_list:
-            # Using .get() prevents crashing if a key is missing in the JSON
             if staff.get('email') == user_email and staff.get('password') == user_pwd:
                 is_valid = True
                 break
 
-        # 3. Grant access or send error for Toast
         if is_valid:
             session['admin_logged_in'] = True
             return jsonify({"status": "success", "redirect": url_for('master_dashboard')})
         else:
-            # This triggers the 'error' part of your JavaScript fetch to show the Toast
             return jsonify({"status": "error", "message": "Invalid Login Details"}), 401
 
     return render_template('master/index.html')
