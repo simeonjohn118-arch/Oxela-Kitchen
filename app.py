@@ -742,7 +742,7 @@ def complaints():
 
 @app.route('/settings')
 def settings():
-    return render_template('master/settings.html')
+    return render_template('master/settings_dashboard.html')
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
