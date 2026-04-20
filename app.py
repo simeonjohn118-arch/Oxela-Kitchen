@@ -45,7 +45,7 @@ def master_login():
 @app.route('/master/logout')
 def master_logout():
     session.clear() 
-    return redirect(url_for('master_login'))
+    return redirect(url_for('master/index.html'))
 
 @app.route('/debug')
 def debug():
