@@ -16,30 +16,40 @@ from bson.objectid import ObjectId
 app = Flask(__name__)
 app.secret_key = 'oxela_kitchen_secure_key_2026' # Add this line!
 
+import json
+import os
+
 @app.route('/master', methods=['GET', 'POST'])
 def master_login():
     if request.method == 'POST':
         user_email = request.form.get('username', '').strip()
         user_pwd = request.form.get('password', '').strip()
 
-        # --- THIS IS THE SECTION TO CHANGE ---
-        # Instead of my "admin@oxela.com", use YOUR variable or function
-        # For example, if you have a list of staff called 'all_staff':
-        
+        # 1. Load the actual data from staff.json
+        try:
+            # Adjust the path if staff.json is in a different folder
+            with open('staff.json', 'r') as f:
+                staff_list = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            return jsonify({"status": "error", "message": "Database Error: staff.json not found"}), 500
+
+        # 2. Check if credentials match any staff member
         is_valid = False
-        # If you use a JSON file, your logic likely looks like this:
-        for staff in staff_data: # staff_data being your loaded staff.json
-            if staff['email'] == user_email and staff['password'] == user_pwd:
+        for staff in staff_list:
+            # Using .get() prevents crashing if a key is missing in the JSON
+            if staff.get('email') == user_email and staff.get('password') == user_pwd:
                 is_valid = True
                 break
 
+        # 3. Grant access or send error for Toast
         if is_valid:
             session['admin_logged_in'] = True
-            return redirect(url_for('master_dashboard'))
+            return jsonify({"status": "success", "redirect": url_for('master_dashboard')})
         else:
-            # This is what's giving you the white page. 
-            # Let's send it back to the template so the Toast can work.
-            return render_template('master/index.html', error="Invalid Credentials")x.html')
+            # This triggers the 'error' part of your JavaScript fetch to show the Toast
+            return jsonify({"status": "error", "message": "Invalid Login Details"}), 401
+
+    return render_template('master/index.html')
 
 @app.route('/master/admin_hub')
 def master_dashboard():
