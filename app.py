@@ -16,11 +16,6 @@ from bson.objectid import ObjectId
 app = Flask(__name__)
 app.secret_key = 'oxela_kitchen_secure_key_2026' # Add this line!
 
-import json
-import os
-
-import json
-import os
 
 @app.route('/master', methods=['GET', 'POST'])
 def master_login():
