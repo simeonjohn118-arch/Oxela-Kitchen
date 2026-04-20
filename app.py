@@ -23,23 +23,27 @@ def master_login():
         user_email = request.form.get('username', '').strip()
         user_pwd = request.form.get('password', '').strip()
 
-        # --- SAFE FILE LOADING ---
-        # This finds the exact folder app.py is in so it doesn't get lost
-        base_path = os.path.dirname(os.path.abspath(__file__))
-        json_path = os.path.join(base_path, 'staff.json')
+        # 1. FIND THE FILE: This tells Python to look in the exact folder where app.py lives
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        json_path = os.path.join(current_dir, 'staff.json')
 
         try:
+            # Check if the file actually exists before trying to open it
             if not os.path.exists(json_path):
-                print(f"DEBUG: File not found at {json_path}")
-                return jsonify({"status": "error", "message": "staff.json file missing"}), 500
+                print(f"CRITICAL ERROR: staff.json NOT FOUND at: {json_path}")
+                return jsonify({"status": "error", "message": "Internal Server Error: Database file missing"}), 500
 
             with open(json_path, 'r') as f:
                 staff_list = json.load(f)
+                
+        except json.JSONDecodeError:
+            print("CRITICAL ERROR: staff.json exists but the formatting is BROKEN (JSON syntax error).")
+            return jsonify({"status": "error", "message": "Database format error"}), 500
         except Exception as e:
-            print(f"DEBUG: Error reading JSON: {e}")
-            return jsonify({"status": "error", "message": "Database read error"}), 500
+            print(f"CRITICAL ERROR: {str(e)}")
+            return jsonify({"status": "error", "message": "Server error"}), 500
 
-        # --- CREDENTIAL CHECK ---
+        # 2. CHECK CREDENTIALS
         is_valid = False
         for staff in staff_list:
             if staff.get('email') == user_email and staff.get('password') == user_pwd:
@@ -50,6 +54,7 @@ def master_login():
             session['admin_logged_in'] = True
             return jsonify({"status": "success", "redirect": url_for('master_dashboard')})
         else:
+            # This triggers the Toast in your frontend
             return jsonify({"status": "error", "message": "Invalid Login Details"}), 401
 
     return render_template('master/index.html')
