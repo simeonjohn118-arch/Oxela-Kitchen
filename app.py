@@ -30,7 +30,7 @@ def master_login():
 
     return render_template('master/index.html')
 
-@app.route('/master/dashboard')
+@app.route('/master/admin_hub')
 def master_dashboard():
     # If the session isn't found, redirect to login
     if not session.get('admin_logged_in'):
@@ -40,7 +40,7 @@ def master_dashboard():
 @app.route('/master/logout')
 def master_logout():
     session.clear() # Wipes everything
-    return redirect(url_for('master_login'))
+    return redirect(url_for('master/index.html'))
 
 @app.route('/debug')
 def debug():
