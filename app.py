@@ -51,13 +51,6 @@ def master_login():
 
     return render_template('master/index.html')
 
-@app.route('/master/admin_hub')
-def master_dashboard():
-    # If the session isn't found, redirect to the LOGIN FUNCTION NAME
-    if not session.get('admin_logged_in'):
-        return redirect(url_for('master_login'))
-    return render_template('master/admin_hub.html')
-
 @app.route('/master/logout')
 def master_logout():
     session.clear() 
