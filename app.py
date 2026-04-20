@@ -710,6 +710,40 @@ def settings_page_view():
 def complaints_page_view():
     return render_template('customer/complaint.html')
 
+@app.route('/admin_menu')
+def admin_menu():
+    return render_template('admin_menu.html')
+
+@app.route('/dashboard')
+def dashboard():
+    return render_template('dashboard.html')
+
+@app.route('/order_dashboard')
+def order_dashboard():
+    return render_template('order_dashboard.html')
+
+@app.route('/special_dashboard')
+def special_dashboard():
+    return render_template('special_dashboard.html')
+
+@app.route('/delivery_admin')
+def delivery_admin():
+    return render_template('delivery_admin.html')
+
+# --- RECORDS & SETTINGS ROUTES ---
+
+@app.route('/sales_records')
+def sales_records():
+    return render_template('sales_records.html')
+
+@app.route('/complaints')
+def complaints():
+    return render_template('complaints.html')
+
+@app.route('/settings')
+def settings():
+    return render_template('settings.html')
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
