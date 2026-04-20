@@ -21,10 +21,11 @@ def master_login():
         user_email = request.form.get('username')
         user_pwd = request.form.get('password')
 
-        # TEST CREDENTIALS: Use these exactly to test first
+        # TEST CREDENTIALS
         if user_email == "admin@oxela.com" and user_pwd == "1234":
             session['admin_logged_in'] = True
-            return redirect(url_for('master_dashboard'))
+            # This matches the name of the function below
+            return redirect(url_for('master_dashboard')) 
         else:
             return "Invalid Login! Go back and try admin@oxela.com / 1234"
 
@@ -32,16 +33,17 @@ def master_login():
 
 @app.route('/master/admin_hub')
 def master_dashboard():
-    # If the session isn't found, redirect to login
+    # If the session isn't found, redirect to the LOGIN FUNCTION NAME
     if not session.get('admin_logged_in'):
         return redirect(url_for('master_login'))
     return render_template('master/admin_hub.html')
 
 @app.route('/master/logout')
 def master_logout():
-    session.clear() # Wipes everything
-    return redirect(url_for('master/index.html'))
-
+    session.clear() 
+    # FIX: You must redirect to the FUNCTION name 'master_login', 
+    # not the HTML file path.
+    return redirect(url_for('master_login'))
 @app.route('/debug')
 def debug():
     try:
