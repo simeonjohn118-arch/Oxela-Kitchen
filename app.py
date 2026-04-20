@@ -652,6 +652,13 @@ def customer_home():
         return f"ERROR: File not found at {template_path}.", 404
     return render_template('customer/home.html')
 
+@app.route('/admin_hub')
+def admin_hub_view():
+    template_path = os.path.join('templates', 'master', 'admin_hub.html')
+    if not os.path.exists(template_path):
+        return f"ERROR: File not found at {template_path}.", 404
+    return render_template('master/admin_hub.html')
+    
 @app.route('/update_festive', methods=['POST'])
 def handle_festive_save():
     global festive_config
