@@ -184,7 +184,7 @@
     function goToChat(id) {
         if (!id || id === "Unknown ID") return;
         localStorage.setItem('activeChatId', id);
-        window.location.href = `complaints.html?id=${id}`;
+        window.location.href = `complaints?id=${id}`;
     }
 
     // Initial load
