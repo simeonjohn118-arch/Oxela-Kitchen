@@ -13,6 +13,10 @@ from werkzeug.utils import secure_filename
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 
+# --- SECURE DOTENV SYSTEM INITIALIZATION ---
+from dotenv import load_dotenv
+load_dotenv() # Reads the hidden .env file into your system memory
+
 app = Flask(__name__)
 app.secret_key = 'oxela_kitchen_secure_key_2026' # Add this line!
 
@@ -85,9 +89,10 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # --- EMAIL CONFIGURATION ---
-EMAIL_SENDER = "simeonjohn118@gmail.com" 
-EMAIL_PASSWORD = "qvsmwldprxaktxri" 
-EMAIL_RECEIVER = "simeonjohn118@gmail.com" 
+# SECURE UPGRADE: Pulling from environmental system memory instead of exposed strings
+EMAIL_SENDER = os.environ.get("EMAIL_SENDER", "simeonjohn118@gmail.com") 
+EMAIL_PASSWORD = os.environ.get("EMAIL_PASSWORD", "qvsmwldprxaktxri") 
+EMAIL_RECEIVER = os.environ.get("EMAIL_RECEIVER", "simeonjohn118@gmail.com")
 
 # --- MONGODB CLOUD SETUP ---
 MONGO_URI = "mongodb+srv://simeonjohn118_db_user:Simeon3991@cluster0.9j6otzp.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
